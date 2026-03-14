@@ -166,6 +166,143 @@ The `publish` skill handles format conversion. Write once in markdown, publish e
 
 ---
 
+## The Ecosystem
+
+AuthorOS is the authoring core of a larger creative intelligence ecosystem. You can use AuthorOS standalone and never touch the rest — but if you want to go deeper, everything connects.
+
+```
+frankxai Ecosystem
+├── AUTHORING
+│   ├── author-os              ← YOU ARE HERE (universal core)
+│   ├── author-os-skills       ← Skill marketplace for all agents
+│   └── arcanea-author         ← Mythology-enhanced extension
+│
+├── INTELLIGENCE
+│   ├── opencode-arcanea       ← Multi-model runtime (11 Greek god agents)
+│   ├── claude-arcanea         ← Claude Code integration layer
+│   └── Starlight Intelligence ← 5-layer cognitive architecture
+│
+├── PLATFORMS
+│   ├── arcanea.ai             ← Creator platform (Next.js + Supabase)
+│   ├── frankx.ai              ← Personal hub
+│   └── Arcanea monorepo       ← 27 repos, 35 npm packages
+│
+├── TOOLS
+│   ├── arcanea-mcp            ← MCP server (worldbuilding, canon)
+│   ├── arcanea-memory         ← Memory MCP (vault, horizon)
+│   ├── memsearch-sqlite       ← Vector search (included in this repo)
+│   └── arcanea-infogenius     ← Visual intelligence
+│
+├── CONTENT
+│   ├── Library of Arcanea     ← 200K+ words, 17 collections
+│   ├── arcanea-lore           ← Canon, Guardians, Godbeasts
+│   └── book/                  ← Published creative works
+│
+└── AUTOMATION
+    ├── n8n workflows          ← Publishing automation
+    ├── Claude Code hooks      ← Session capture, quality gates
+    └── GitHub Actions         ← CI/CD across repos
+```
+
+### How AuthorOS Fits
+
+AuthorOS is **the universal authoring layer**. It has zero dependencies on the rest of the ecosystem — any author can use it with any coding agent on any project. The Arcanea ecosystem extends it with mythology, gamification, memory systems, and publishing infrastructure, but AuthorOS stands alone.
+
+Think of it like this:
+- **AuthorOS** = the engine
+- **author-os-skills** = the parts catalog
+- **arcanea-author** = a fully-built vehicle using that engine
+- **arcanea.ai** = the racetrack where vehicles compete
+
+---
+
+## The Creator Economy Pipeline
+
+AuthorOS handles the writing. The broader ecosystem handles everything after.
+
+```
+Blog Post → Newsletter → Book Chapter → Published Book → Audiobook → Course → Community → Collectibles
+    │            │             │              │              │           │          │            │
+    ▼            ▼             ▼              ▼              ▼           ▼          ▼            ▼
+  Ghost      Substack     AuthorOS        Amazon       ElevenLabs   Academy    Discord      Web3
+  Medium    ConvertKit    + publish       Lulu         + AI voice   Courses    Forums     On-chain
+  Blog        Email        skill         IngramSpark   Narration    Workshops  Co-creation  IP NFTs
+```
+
+Each stage has tooling in the ecosystem. AuthorOS owns the **writing and revision** stages. The `publish` skill bridges into distribution. The broader frankxai ecosystem provides platforms, automation, and monetization infrastructure for everything downstream.
+
+**The key insight**: a single well-written chapter can become a blog post, a newsletter issue, a book section, a course module, and a collectible artifact. AuthorOS's content cascade makes this practical, not theoretical.
+
+---
+
+## For Authors Who Want More
+
+AuthorOS is designed as a starting point. Here's the progression path for authors who want to go deeper:
+
+| Level | What You Do | What You Gain | Tools |
+|-------|------------|---------------|-------|
+| **1. Write** | Install AuthorOS skills | Structured revision, anti-slop, multi-pass editing | `skills/`, any coding agent |
+| **2. Remember** | Add semantic memory | Never lose track of your canon across 200K+ words | `memsearch-sqlite.py`, Gemini embeddings |
+| **3. Mythologize** | Add Arcanean extension | Elemental writing modes, Gate progression, Guardian agents | [arcanea-author](https://github.com/frankxai/arcanea-author) |
+| **4. Orchestrate** | Build your own agent team | Personalized AI collaborators tuned to your voice and genre | [opencode-arcanea](https://github.com/frankxai/opencode-arcanea), [claude-arcanea](https://github.com/frankxai/claude-arcanea) |
+| **5. Build Worlds** | Create your own universe | Full world framework — lore, characters, magic systems, game dev | [arcanea.ai](https://arcanea.ai), [arcanea-mcp](https://github.com/frankxai/arcanea-mcp) |
+| **6. Teach** | Share what you learned | Courses, academies, communities, the creator economy | [arcanea.ai/academy](https://arcanea.ai/academy) |
+
+You can stop at any level. Each level is complete on its own. But if you keep going, everything compounds — your memory systems feed your world-building, your world-building feeds your courses, your courses feed your community.
+
+---
+
+## What Authors Learn
+
+Using AuthorOS teaches skills that transfer far beyond writing:
+
+- **Multi-agent orchestration** — Managing AI writing teams with specialized roles (not one chatbot doing everything)
+- **Prompt engineering for fiction** — Real craft techniques: voice calibration, anti-slop detection, subtext generation. Not marketing copy — literature.
+- **Semantic memory systems** — Vector search, canon management, lorebook architecture. The same tech powering RAG at scale, applied to your manuscripts.
+- **Publishing automation** — Markdown to every format. One source, infinite outputs. The same CI/CD philosophy that transformed software engineering.
+- **Creator economy** — Monetization beyond book sales: content cascades, community building, licensing, teaching.
+- **World-building as a discipline** — Systematic universe construction with internal consistency, transmedia potential, and franchise architecture.
+
+---
+
+## Related Repositories
+
+| Repository | Description | Link |
+|-----------|-------------|------|
+| **author-os-skills** | Skill marketplace — community-contributed skills for all agents | [frankxai/author-os-skills](https://github.com/frankxai/author-os-skills) |
+| **arcanea-author** | Mythology-enhanced AuthorOS with Ten Gates, Five Elements, Guardian agents | [frankxai/arcanea-author](https://github.com/frankxai/arcanea-author) |
+| **opencode-arcanea** | Multi-model runtime with 11 Greek god agents for creative intelligence | [frankxai/opencode-arcanea](https://github.com/frankxai/opencode-arcanea) |
+| **claude-arcanea** | Claude Code overlays, hooks, and session management for Arcanea workflows | [frankxai/claude-arcanea](https://github.com/frankxai/claude-arcanea) |
+| **arcanea-mcp** | MCP server for worldbuilding, canon validation, and creative intelligence | [frankxai/arcanea-mcp](https://github.com/frankxai/arcanea-mcp) |
+| **arcanea-memory** | Memory MCP server — vault storage, horizon append, semantic recall | [frankxai/arcanea-memory](https://github.com/frankxai/arcanea-memory) |
+| **arcanea-infogenius** | Visual intelligence — infographic generation, research, visual storytelling | [frankxai/arcanea-infogenius](https://github.com/frankxai/arcanea-infogenius) |
+| **arcanea-lore** | Canonical lore — Guardians, Godbeasts, Gates, Elements, the Arcanean universe | [frankxai/arcanea-lore](https://github.com/frankxai/arcanea-lore) |
+| **arcanea-skills-opensource** | 54 open-source skills for Claude Code and other coding agents | [frankxai/arcanea-skills-opensource](https://github.com/frankxai/arcanea-skills-opensource) |
+
+---
+
+## Why This Matters
+
+Authors are the original world-builders. Long before software engineers, authors constructed universes with internal logic, character systems, plot architectures, and canon that spans thousands of pages.
+
+Software engineering got CI/CD, version control, automated testing, deployment pipelines, code review, and collaboration tools. Authors got... Word and hope.
+
+AuthorOS changes that.
+
+**Structured pipelines** — Seven-Pass Revision isn't "AI rewrite my chapter." It's a disciplined editing methodology where each pass has one job, one focus, one set of things it catches. The same rigor as a test suite, applied to prose.
+
+**Quality gates** — Anti-slop detection catches the patterns that make AI writing sound like AI writing. Canon verification catches contradictions before readers do. Continuity checks span your entire manuscript, not just the current context window.
+
+**Memory systems** — Semantic vector search means your AI collaborators can find relevant passages across 200,000 words in under two seconds. Your characters stay consistent. Your world stays coherent. Your canon stays locked.
+
+**Collaboration tools** — Multi-agent orchestration means different AI models handle different aspects of writing: one for structure, one for dialogue, one for prose rhythm, one for fact-checking. Not one generalist doing everything poorly — specialists doing their jobs well.
+
+This is not about replacing authors. It never was. The best AI-assisted writing still requires an author with vision, taste, and craft. AuthorOS gives that author **superpowers** — the same kind of superpowers that IDEs, debuggers, and CI/CD gave software engineers.
+
+The author remains the architect. AuthorOS is the construction crew.
+
+---
+
 ## File Structure
 
 ```
