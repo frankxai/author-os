@@ -1,0 +1,33 @@
+{
+  "name": "@author-os/cli",
+  "version": "0.1.0",
+  "description": "AuthorOS — AI-native author operating system CLI",
+  "type": "module",
+  "bin": {
+    "author": "./bin/author.js"
+  },
+  "scripts": {
+    "start": "node bin/author.js",
+    "test": "node bin/quality-check.js --self-test"
+  },
+  "keywords": [
+    "ai",
+    "writing",
+    "author",
+    "book",
+    "publishing",
+    "claude-code",
+    "mcp"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frankxai/author-os"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/"
+  ]
+}
