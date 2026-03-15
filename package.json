@@ -1,10 +1,10 @@
 {
-  "name": "@author-os/cli",
+  "name": "author-os-cli",
   "version": "0.1.0",
-  "description": "AuthorOS — AI-native author operating system CLI",
+  "description": "AuthorOS \u2014 AI-native author operating system CLI",
   "type": "module",
   "bin": {
-    "author": "./bin/author.js"
+    "author-os": "bin/author.js"
   },
   "scripts": {
     "start": "node bin/author.js",
@@ -28,6 +28,10 @@
     "node": ">=18"
   },
   "files": [
-    "bin/"
+    "bin/",
+    "skills/",
+    "memory/",
+    "templates/",
+    "README.md"
   ]
 }
