@@ -1,6 +1,6 @@
 {
   "name": "author-os-cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "AuthorOS \u2014 AI-native author operating system CLI",
   "type": "module",
   "bin": {
