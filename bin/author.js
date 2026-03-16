@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 // AuthorOS CLI — the author's command line
-// Commands: init, write, revise, search, status, publish, agents
+// Commands: init, write, revise, search, status, publish, agents, setup
 
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const VERSION = '0.1.0';
+const VERSION = '0.1.2';
 const BRAND = 'AuthorOS';
 
 const args = process.argv.slice(2);
@@ -20,6 +21,7 @@ function log(msg) { console.log(msg); }
 function err(msg) { console.error(`\x1b[31m${msg}\x1b[0m`); }
 function ok(msg) { console.log(`\x1b[32m${msg}\x1b[0m`); }
 function dim(msg) { console.log(`\x1b[2m${msg}\x1b[0m`); }
+function warn(msg) { console.log(`\x1b[33m${msg}\x1b[0m`); }
 function bold(msg) { return `\x1b[1m${msg}\x1b[0m`; }
 
 function ensureDir(dir) {
@@ -35,6 +37,27 @@ function findMdFiles(dir) {
   return fs.readdirSync(dir)
     .filter(f => f.endsWith('.md'))
     .map(f => path.join(dir, f));
+}
+
+function getPackageDir() {
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+}
+
+function getSkillsDir() {
+  return path.join(getPackageDir(), 'skills');
+}
+
+function commandExists(cmd) {
+  try {
+    execSync(`command -v ${cmd} 2>/dev/null || where ${cmd} 2>NUL`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 5000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // ── Commands ─────────────────────────────────────────────────────────
@@ -79,7 +102,7 @@ function cmdStatus() {
   const chapDir = 'chapters';
   const files = findMdFiles(chapDir);
   if (files.length === 0) {
-    err('  No chapters found. Run `author init` first.');
+    err('  No chapters found. Run `author-os init` first.');
     return;
   }
   let totalWords = 0;
@@ -107,34 +130,68 @@ function cmdStatus() {
 }
 
 function cmdSearch(query) {
-  if (!query) { err('Usage: author search "query"'); process.exit(1); }
+  if (!query) { err('Usage: author-os search "query"'); process.exit(1); }
   log(`\n${bold(BRAND)} — Searching: "${query}"\n`);
+
+  // Check if memsearch is available
+  const memsearchPath = path.join(getPackageDir(), 'memory', 'memsearch-sqlite.py');
+  const hasMemsearch = fs.existsSync(memsearchPath) || commandExists('memsearch-sqlite.py');
+  const hasPython = commandExists('python3') || commandExists('python');
+
+  if (!hasPython) {
+    warn('  Python 3 is not installed. Semantic search requires Python 3.');
+    warn('  Install: https://www.python.org/downloads/');
+    dim('  Falling back to grep...\n');
+  } else if (!hasMemsearch) {
+    dim('  memsearch-sqlite.py not found. For semantic search:');
+    dim('    pip install sentence-transformers sqlite-utils');
+    dim('    See: https://github.com/frankxai/author-os#semantic-search\n');
+    dim('  Falling back to grep...\n');
+  }
+
+  if (hasPython && hasMemsearch) {
+    try {
+      const pythonCmd = commandExists('python3') ? 'python3' : 'python';
+      const result = execSync(
+        `${pythonCmd} "${memsearchPath}" --query "${query.replace(/"/g, '\\"')}"`,
+        { encoding: 'utf-8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'] }
+      );
+      log(result);
+      return;
+    } catch (e) {
+      dim('  memsearch failed, falling back to grep...\n');
+    }
+  }
+
+  // Grep fallback
   try {
-    const result = execSync(
-      `python3 memsearch-sqlite.py --query "${query.replace(/"/g, '\\"')}" 2>/dev/null || echo "memsearch not available — falling back to grep"`,
+    const dirs = ['chapters', 'characters', 'worldbuilding', 'notes']
+      .filter(d => fs.existsSync(d));
+    if (dirs.length === 0) {
+      err('  No project directories found. Run `author-os init` first.');
+      process.exit(1);
+    }
+    const grepResult = execSync(
+      `grep -rn --include="*.md" -i "${query.replace(/"/g, '\\"')}" ${dirs.join(' ')} 2>/dev/null || echo "  No matches found."`,
       { encoding: 'utf-8', timeout: 10000 }
     );
-    if (result.includes('falling back to grep')) {
-      dim('  memsearch-sqlite.py not found, using grep fallback...\n');
-      const grepResult = execSync(
-        `grep -rn --include="*.md" -i "${query.replace(/"/g, '\\"')}" chapters/ characters/ worldbuilding/ notes/ 2>/dev/null || echo "  No matches found."`,
-        { encoding: 'utf-8', timeout: 10000 }
-      );
-      log(grepResult);
-    } else {
-      log(result);
-    }
+    log(grepResult);
   } catch (e) {
     err(`  Search failed: ${e.message}`);
   }
 }
 
 function cmdQuality(file) {
-  if (!file) { err('Usage: author quality <file.md>'); process.exit(1); }
+  if (!file) { err('Usage: author-os quality <file.md>'); process.exit(1); }
   log(`\n${bold(BRAND)} — Quality Check\n`);
   try {
-    const binDir = path.dirname(new URL(import.meta.url).pathname);
+    const binDir = path.dirname(fileURLToPath(import.meta.url));
     const checker = path.join(binDir, 'quality-check.js');
+    if (!fs.existsSync(checker)) {
+      err(`  quality-check.js not found at ${checker}`);
+      err('  Reinstall author-os: npm install -g author-os-cli');
+      process.exit(1);
+    }
     const result = execSync(`node "${checker}" "${file}"`, { encoding: 'utf-8', timeout: 15000 });
     log(result);
   } catch (e) {
@@ -147,6 +204,20 @@ function cmdQuality(file) {
 function cmdPublish(format) {
   if (!format) format = 'epub';
   log(`\n${bold(BRAND)} — Publishing to ${format}\n`);
+
+  // Check for pandoc before doing any work
+  if (!commandExists('pandoc')) {
+    err('  pandoc is not installed. It is required for publishing.\n');
+    log('  Install pandoc for your platform:');
+    log('');
+    log('    macOS:    brew install pandoc');
+    log('    Ubuntu:   sudo apt install pandoc');
+    log('    Windows:  choco install pandoc   (or winget install pandoc)');
+    log('    Other:    https://pandoc.org/installing.html');
+    log('');
+    process.exit(1);
+  }
+
   ensureDir('output');
   const chapters = findMdFiles('chapters').sort();
   if (chapters.length === 0) { err('  No chapters found.'); process.exit(1); }
@@ -162,7 +233,7 @@ function cmdPublish(format) {
     const stat = fs.statSync(outFile);
     log(`  Size: ${(stat.size / 1024).toFixed(1)} KB`);
   } catch (e) {
-    err(`  pandoc failed. Install it: https://pandoc.org/installing.html`);
+    err(`  pandoc failed to generate ${format}.`);
     dim(`  ${e.message}`);
     process.exit(1);
   }
@@ -172,7 +243,7 @@ function cmdPublish(format) {
 function cmdAgents() {
   log(`\n${bold(BRAND)} — Agent Registry\n`);
   const agentFile = 'tasks/agents.json';
-  if (!fs.existsSync(agentFile)) { err(`  ${agentFile} not found. Run \`author init\` first.`); return; }
+  if (!fs.existsSync(agentFile)) { err(`  ${agentFile} not found. Run \`author-os init\` first.`); return; }
   const data = JSON.parse(fs.readFileSync(agentFile, 'utf-8'));
   log('  Name            Role                                          Model');
   log('  ' + '-'.repeat(74));
@@ -182,26 +253,142 @@ function cmdAgents() {
   log(`\n  Total agents: ${data.agents.length}\n`);
 }
 
+function cmdSetup() {
+  log(`\n${bold(BRAND)} — Setup\n`);
+
+  const skillsSource = getSkillsDir();
+  const skillFiles = ['story-architect.md', 'character-psychologist.md', 'line-editor.md', 'publish.md'];
+
+  // Verify skills source exists
+  if (!fs.existsSync(skillsSource)) {
+    err(`  Skills directory not found at ${skillsSource}`);
+    err('  Reinstall: npm install -g author-os-cli');
+    process.exit(1);
+  }
+
+  // Detect coding agents
+  log('  Detecting coding agents...');
+  const agents = {
+    'Claude Code': { check: () => fs.existsSync('.claude'), dest: '.claude/commands', type: 'dir' },
+    'Cursor':      { check: () => fs.existsSync('.cursor'), dest: '.cursor/rules', type: 'dir' },
+    'Codex':       { check: () => fs.existsSync('.codex'),  dest: '.codex/commands', type: 'dir' },
+    'OpenCode':    { check: () => fs.existsSync('.opencode'), dest: '.opencode/commands', type: 'dir' },
+    'AGENTS.md':   { check: () => fs.existsSync('AGENTS.md'), dest: 'AGENTS.md', type: 'agents-md' },
+  };
+
+  let anyFound = false;
+  const detected = {};
+
+  for (const [name, config] of Object.entries(agents)) {
+    const found = config.check();
+    detected[name] = found;
+    if (found) {
+      ok(`    ${name}: Found`);
+      anyFound = true;
+    } else {
+      dim(`    ${name}: Not found`);
+    }
+  }
+
+  log('');
+
+  // Copy skills to detected agents
+  let copiedTo = [];
+
+  for (const [name, config] of Object.entries(agents)) {
+    if (!detected[name]) continue;
+
+    if (config.type === 'agents-md') {
+      // Append agent definitions to AGENTS.md
+      log(`  Appending agent definitions to AGENTS.md...`);
+      const existing = fs.readFileSync('AGENTS.md', 'utf-8');
+      if (existing.includes('author-os')) {
+        dim('    ~ AGENTS.md already has author-os definitions, skipped');
+      } else {
+        const agentDefs = `\n\n## AuthorOS Agents\n\n` +
+          `The following agents are provided by [author-os](https://github.com/frankxai/author-os):\n\n` +
+          `- **story-architect** — Builds narrative structure, outlines, and scene beats\n` +
+          `- **character-psychologist** — Develops deep character profiles with arcs and voice\n` +
+          `- **line-editor** — Revises prose for clarity, rhythm, and voice consistency\n` +
+          `- **publish** — Compiles and exports manuscripts to epub/pdf\n`;
+        fs.appendFileSync('AGENTS.md', agentDefs);
+        ok('    + AGENTS.md (appended agent definitions)');
+      }
+      copiedTo.push(name);
+      continue;
+    }
+
+    // Directory-based agent: copy skill files
+    ensureDir(config.dest);
+    log(`  Copying skills to ${config.dest}/...`);
+    for (const skill of skillFiles) {
+      const src = path.join(skillsSource, skill);
+      const dst = path.join(config.dest, skill);
+      if (!fs.existsSync(src)) {
+        warn(`    ! ${skill} not found in package`);
+        continue;
+      }
+      fs.copyFileSync(src, dst);
+      ok(`    + ${skill}`);
+    }
+    copiedTo.push(name);
+  }
+
+  // If no agent detected: copy to ./skills/
+  if (!anyFound) {
+    warn('  No coding agent detected.');
+    log('  Copying skills to ./skills/ — import them manually into your preferred tool.\n');
+    ensureDir('skills');
+    for (const skill of skillFiles) {
+      const src = path.join(skillsSource, skill);
+      const dst = path.join('skills', skill);
+      if (!fs.existsSync(src)) {
+        warn(`    ! ${skill} not found in package`);
+        continue;
+      }
+      fs.copyFileSync(src, dst);
+      ok(`    + skills/${skill}`);
+    }
+    log('');
+    return;
+  }
+
+  // Print completion message
+  log('');
+  if (detected['Claude Code']) {
+    ok(`  Done! Run /story-architect in Claude Code to start writing.`);
+  } else if (copiedTo.length > 0) {
+    ok(`  Done! Skills installed for: ${copiedTo.join(', ')}`);
+  }
+  log('');
+}
+
 function cmdHelp() {
   log(`
 ${bold(BRAND)} v${VERSION} — AI-native author operating system
 
-  Usage: author <command> [args]
+  Usage: author-os <command> [args]
 
   Commands:
     init                Create project structure
+    setup               Detect coding agents and install skills
     status              Word counts, chapter overview
     search "query"      Search across all project files
     quality <file.md>   Check prose quality (AI tics, passive voice)
     publish [epub|pdf]  Convert chapters to publishable format
     agents              Show agent registry
 
+  Flags:
+    -v, --version       Show version
+    -h, --help          Show this help
+
   Examples:
-    author init
-    author status
-    author search "dragon"
-    author quality chapters/01-chapter.md
-    author publish epub
+    author-os init
+    author-os setup
+    author-os status
+    author-os search "dragon"
+    author-os quality chapters/01-chapter.md
+    author-os publish epub
 `);
 }
 
@@ -209,6 +396,7 @@ ${bold(BRAND)} v${VERSION} — AI-native author operating system
 
 switch (command) {
   case 'init':    cmdInit(); break;
+  case 'setup':   cmdSetup(); break;
   case 'status':  cmdStatus(); break;
   case 'search':  cmdSearch(subarg); break;
   case 'quality': cmdQuality(subarg); break;
