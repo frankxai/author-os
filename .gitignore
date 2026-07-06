@@ -1,13 +1,23 @@
 
 # Starlight/ACOS temporary files
 .agent/
-*.log
+.starlight/
+.gemini/
 .system_generated/
 .next-backup/
+*.log
 temp-*.json
 link-checker-report.json
 link-checker-report.txt
+tmp/
+reports/
+.next/
+apps/*/.next/
+node_modules/
+apps/*/node_modules/
+packages/*/node_modules/
 
-# Starlight/ACOS temporary files
-.starlight/
-.gemini/
+# Local and hosted secrets
+.env.local
+.env.*.local
+.vercel/

@@ -1,0 +1,72 @@
+name: Author OS CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "bin/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "vercel.json"
+      - ".github/workflows/author-os-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "bin/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "vercel.json"
+      - ".github/workflows/author-os-ci.yml"
+
+concurrency:
+  group: author-os-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  local-gates:
+    name: Local Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: npm run runtime:check
+
+      - run: npm test
+
+      - run: node bin/author.js cloud-env --json --no-env-file
+
+      - run: node bin/author.js launch-plan --json --no-env-file
+
+      - run: node bin/author.js cloud-migrate --dry-run --json --no-env-file
+
+      - run: node bin/author.js cloud-readiness --json --no-env-file
+
+      - run: node bin/author.js production-evidence --no-env-file
+
+      - run: pnpm --filter @author-os/cockpit build
+
+      - run: node scripts/smoke-hosted-cockpit.mjs

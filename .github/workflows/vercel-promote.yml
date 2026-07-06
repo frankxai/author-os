@@ -1,0 +1,77 @@
+name: Vercel Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: "Validated preview deployment URL or id to promote"
+        required: true
+        type: string
+
+concurrency:
+  group: vercel-promote-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_CLI_VERSION: 54.14.0
+
+jobs:
+  promote:
+    name: Promote Preview To Production
+    if: vars.AUTHOR_OS_USE_ACTIONS_VERCEL == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: npm run runtime:check
+
+      - run: npm test
+
+      - run: npm install -g vercel@${{ env.VERCEL_CLI_VERSION }}
+
+      - name: Pull production env
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - run: node bin/author.js cloud-env --require-ready --json --env-file .env.local
+
+      - run: node bin/author.js cloud-migrate --status --require-current --env-file .env.local
+
+      - run: node bin/author.js cloud-readiness --require-ready --json --env-file .env.local
+
+      - run: node bin/author.js launch-plan --check-db --preview-verified --require-ready --json --env-file .env.local
+
+      - name: Verify live deployment URL
+        run: node scripts/verify-live-cockpit.mjs "${{ inputs.deployment_url }}" --expect-production --require-ready --json
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+
+      - name: Collect production evidence
+        run: node bin/author.js production-evidence --env-file .env.local --live-url "${{ inputs.deployment_url }}" --require-ready
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+
+      - name: Promote deployment
+        run: vercel promote "${{ inputs.deployment_url }}" --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

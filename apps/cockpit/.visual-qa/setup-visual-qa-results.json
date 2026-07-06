@@ -1,0 +1,37 @@
+{
+  "surface": "/setup",
+  "generatedAt": "2026-07-06T01:07:02.274Z",
+  "status": "pass",
+  "results": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1200,
+      "pageOverflow": false,
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "shellPresent": true,
+      "connectorCount": 7,
+      "commandCount": 12,
+      "proofEndpointCount": 9,
+      "sequenceCount": 5,
+      "heroText": "Setup contract needs operator work",
+      "badText": []
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 1600,
+      "pageOverflow": false,
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "shellPresent": true,
+      "connectorCount": 7,
+      "commandCount": 12,
+      "proofEndpointCount": 9,
+      "sequenceCount": 5,
+      "heroText": "Setup contract needs operator work",
+      "badText": []
+    }
+  ]
+}

@@ -57,6 +57,126 @@ python3 memory/memsearch-sqlite.py status
 
 Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in your environment for embeddings.
 
+### Option 4: The Writing Cockpit
+
+```bash
+# Create a local-first project with starter chapters, scenes, beats, canon placeholders, tasks, and canvas state
+author-os init --title "The Clockwork Saint" --template romance-arc --genre "romantasy,mythic fantasy" --premise "A restoration scribe hears damaged books remember the people erased from them."
+
+# See manuscript, story bible, agents, memory, reports, and next moves
+author-os cockpit
+
+# Persist or refresh the portable graph consumed by CLI, MCP, and the hosted cockpit
+author-os sync
+
+# Discover and install the full Foundry Pack workflow bundle without generating manuscript prose
+author-os packs
+author-os packs install authoros-foundry-pack
+
+# Save a machine-readable cockpit report for dashboards or MCP
+author-os cockpit --save
+
+# Emit JSON for another agent, UI, or MCP server
+author-os cockpit --json
+
+# Generate install-ready MCP settings for Codex, Claude, local projects, and hosted cockpit
+author-os mcp --client-config --mode both --host codex --url https://your-author-cockpit
+```
+
+`author-os init` creates `.authoros/project.graph.json` by default. The starter graph is planning scaffolding only: no manuscript prose is generated or applied. Use `--blank` for a bare local graph, or `--template three-act-novel|romance-arc|mystery-thriller|nonfiction-guide|series-bible` to choose the starter shape.
+
+Read the product strategy in [`docs/ULTIMATE_WRITING_COCKPIT.md`](docs/ULTIMATE_WRITING_COCKPIT.md) and the agent integration plan in [`docs/AGENTIC_INTEGRATION_BLUEPRINT.md`](docs/AGENTIC_INTEGRATION_BLUEPRINT.md).
+
+### Hosted Arcanea Author Cockpit
+
+The hosted app lives in `apps/cockpit` and is Vercel-first. Local demo mode uses the sample project; production mode requires auth, Marketplace Postgres, Blob, Stripe, AI Gateway, and explicit launch readiness.
+The checked-in `apps/cockpit/.env.example` is a template only: readiness treats placeholder secrets, example Postgres URLs, fake Stripe price ids, and example model slugs as blocked or review states.
+
+```bash
+pnpm --filter @author-os/cockpit build
+author-os cloud-env
+author-os setup-contract
+author-os launch-plan
+author-os cloud-readiness --json
+author-os cloud-migrate --dry-run --json --no-env-file
+author-os production-evidence --no-env-file
+node scripts/smoke-hosted-cockpit.mjs
+npm run verify:live -- https://your-preview-or-production-url
+```
+
+For protected Vercel previews, create a Vercel Protection Bypass for Automation secret and expose it to the verifier as `VERCEL_AUTOMATION_BYPASS_SECRET` or `AUTHOROS_VERCEL_PROTECTION_BYPASS`. The verifier sends it as the `x-vercel-protection-bypass` header by default, can fall back to `--vercel-bypass-query` for clients that cannot send headers, and only reports whether a bypass was provided, never the secret value. If protection blocks app JSON, the report keeps a single deployment-protection blocker and marks dependent contract checks as skipped so operators do not chase false app failures. For operator-only preview checks, a temporary Vercel share URL also works: pass the full URL with its `_vercel_share` query to `npm run verify:live`, and the verifier will warm the share cookie before checking JSON endpoints. Do not paste or persist temporary share URLs in committed reports.
+
+Key hosted endpoints:
+
+- `GET /api/system/readiness`
+- `GET /api/system/setup-contract`
+- `GET /api/system/launch-plan`
+- `GET /api/system/production-evidence`
+- `GET /api/packs`
+- `GET /api/projects`
+- `POST /api/projects` for starter seeds, explicit blank graphs, portable graph imports, and manuscript-text imports
+- `GET /api/projects/:id/context`
+- `POST /api/projects/:id/packs`
+- `POST /api/projects/:id/agent-runs`
+- `POST /api/projects/:id/exports`
+- `POST /api/projects/:id/suggestions/:suggestionId/approval`
+- `GET /api/mcp`
+- `POST /api/mcp`
+- `GET /api/mcp/client-config`
+- `GET /.well-known/oauth-protected-resource`
+- `GET /projects`
+- `GET /setup`
+- `GET /ops`
+- `GET /billing`
+
+Hosted MCP uses the same tenant-scoped services as the cockpit API for project listing, pack discovery/install, context/canon/search, scene creation, continuity, character boards, exports, run status, and publishing readiness. The hosted endpoint supports the existing simple AuthorOS JSON facade plus MCP-style JSON-RPC calls for `initialize`, `tools/list`, `tools/call`, `resources/templates/list`, `resources/list`, `resources/read`, `prompts/list`, `prompts/get`, and `ping`. Project context, canon, and readiness are exposed as read-only JSON resources, while prompt templates guide project brief, continuity, revision, and export-readiness workflows. It also serves OAuth 2.0 Protected Resource Metadata at `/.well-known/oauth-protected-resource`, and 401 MCP execution failures include a `WWW-Authenticate` discovery header with the required AuthorOS scope. The workspace can also import pasted Markdown/plain-text manuscripts into reviewable chapters, scenes, provenance assets, and queued import-review tasks before any agent changes the prose. Hosted pack installation requires cloud marketplace access or a premium/foundry-pack entitlement, returns a `packAccess` audit snapshot, and adds boards, tasks, asset placeholders, and publishing plans; it does not generate or revise manuscript prose.
+
+Hosted agent installers can fetch the same config shape from `GET /api/mcp/client-config?host=codex&mode=hosted`. The response points at that deployment's `/api/mcp`, includes OAuth protected-resource metadata, and references token environment variable names instead of token values.
+
+Agent install config:
+
+```bash
+author-os mcp --client-config --mode local --host claude --save .authoros/mcp-client-config.json
+author-os mcp --client-config --mode both --host codex --url https://your-author-cockpit --token-env AUTHOROS_MCP_TOKEN
+```
+
+The generated config includes a local stdio server for open-core projects and a hosted Streamable HTTP server for Arcanea Author Cockpit. It references token environment variable names such as `AUTHOROS_MCP_TOKEN`; it never reads or embeds token values.
+
+Production migration flow:
+
+```bash
+author-os cloud-env --example > apps/cockpit/.env.example
+author-os cloud-env --vercel --baseline --project author-os --environments production,preview --app-url https://author.arcanea.ai --preview-branch authoros-preview
+author-os cloud-env --vercel --audit --project author-os --environments production,preview
+author-os cloud-env --vercel --project author-os --environments production,preview --preview-branch authoros-preview
+author-os setup-contract --save
+author-os launch-plan --save
+vercel env pull .env.local --yes
+author-os cloud-env --require-ready --env-file .env.local
+author-os cloud-migrate --status --env-file .env.local
+author-os cloud-migrate --apply --env-file .env.local
+author-os cloud-migrate --status --require-current --env-file .env.local
+author-os cloud-readiness --require-ready --env-file .env.local
+author-os launch-plan --check-db --preview-verified --require-ready --env-file .env.local
+author-os production-evidence --env-file .env.local --live-url https://your-preview-url --remote-env-audit --preview-branch authoros-preview --require-ready --save
+author-os production-evidence --env-file .env.local --live-url https://your-preview-url --remote-env-audit --preview-branch authoros-preview --vercel-bypass-secret $AUTHOROS_VERCEL_PROTECTION_BYPASS --require-ready --save
+npm run verify:live -- https://your-preview-url --expect-production --require-ready
+```
+
+`cloud-env --vercel --baseline` prints apply-ready commands for deterministic non-secret values only: demo mode off, auth required, Clerk provider selected, Postgres adapter selected, local sign-in routes, pool limits, and token budgets. It does not print or invent secrets, database URLs, Stripe price ids, AI Gateway keys, OAuth issuers, or observability keys. For Preview writes, pass `--preview-branch <non-production-branch>` so Vercel CLI can scope the variable to a real preview branch; do not use the production branch. `cloud-env --vercel --audit` runs `vercel env ls` and proves remote name/environment presence only; because Vercel returns encrypted values, it never replaces `cloud-env --require-ready`, provider dashboard proof, database migration checks, or live verification. `production-evidence --remote-env-audit` includes that presence-only audit in the sanitized promotion dossier, and `--require-ready` requests it automatically. `cloud-env --require-ready` rejects missing, placeholder, and invalid values. Do not use `.env.example` as deployment evidence; use a pulled `.env.local` or Vercel project environment populated with real Clerk, Postgres, Blob, Stripe, AI Gateway, app URL, and observability values.
+Production evidence also emits `operatorNextActions`: a sanitized, priority-ordered queue for Codex, CI, or a human operator. It consolidates remote env presence, local env value validation, provider connector blockers, database migration state, protected-preview access, live verification, and launch-plan blockers into executable next commands without embedding secrets.
+Vercel production targets are sealed against demo runtime: even if `AUTHOROS_DEMO_MODE=true` is accidentally present, the hosted app reports production mode, requires verified auth context, and uses unconfigured or production adapters instead of serving sample author data.
+If Vercel deployment protection is enabled on preview deployments, create a Protection Bypass for Automation secret and expose it only to the operator/CI environment as `AUTHOROS_VERCEL_PROTECTION_BYPASS` or `VERCEL_AUTOMATION_BYPASS_SECRET`; the live verifier and production-evidence collector redact this value from reports.
+
+See [`docs/VERCEL_PRODUCTION_RUNBOOK.md`](docs/VERCEL_PRODUCTION_RUNBOOK.md) for the production data-plane contract.
+
+Deployment automation:
+
+- `vercel.json` builds `apps/cockpit` from the monorepo root and skips docs-only Vercel builds.
+- `author-os-ci.yml` runs tests, dry-run cloud gates, build, and smoke.
+- `vercel-preview.yml` is manual and gated by `AUTHOR_OS_USE_ACTIONS_VERCEL=true` for prebuilt previews and live URL verification.
+- `vercel-promote.yml` promotes a validated preview only after env, migration, readiness, launch-plan, and live URL checks.
+
 ---
 
 ## Architecture
@@ -318,7 +438,13 @@ author-os/
 │   └── novel/
 │       └── outline.md          # Novel outline template
 ├── docs/                       # Architecture documentation
-│   └── ARCHITECTURE.md         # System design
+│   ├── ARCHITECTURE.md         # System design
+│   ├── COMMAND_CENTER.md       # Publishing house dashboard concept
+│   ├── ULTIMATE_WRITING_COCKPIT.md
+│   └── AGENTIC_INTEGRATION_BLUEPRINT.md
+├── bin/
+│   ├── author.js               # CLI, including `author-os cockpit`
+│   └── quality-check.js        # Local quality gate
 └── README.md
 ```
 

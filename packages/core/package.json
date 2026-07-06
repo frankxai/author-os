@@ -1,0 +1,14 @@
+{
+  "name": "@author-os/core",
+  "version": "0.2.0",
+  "description": "Portable story graph, routing policy, export, and continuity primitives for Agentic Author OS.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node tests/run-tests.js"
+  },
+  "license": "MIT"
+}

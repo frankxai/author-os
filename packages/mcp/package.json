@@ -1,0 +1,25 @@
+{
+  "name": "@author-os/mcp",
+  "version": "0.2.0",
+  "description": "MCP tool definitions and local stdio server for Agentic Author OS.",
+  "type": "module",
+  "main": "src/tools.js",
+  "bin": {
+    "author-os-mcp": "bin/author-os-mcp.js"
+  },
+  "exports": {
+    ".": "./src/tools.js",
+    "./client-config": "./src/client-config.js",
+    "./manifest": "./src/manifest.js"
+  },
+  "dependencies": {
+    "@author-os/core": "workspace:*",
+    "@author-os/local": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.2.0"
+  },
+  "scripts": {
+    "test": "node tests/run-tests.js"
+  },
+  "license": "MIT"
+}

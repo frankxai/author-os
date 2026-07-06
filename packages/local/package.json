@@ -1,0 +1,14 @@
+{
+  "name": "@author-os/local",
+  "version": "0.2.0",
+  "description": "Local filesystem adapter for Agentic Author OS project graphs.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "dependencies": {
+    "@author-os/core": "workspace:*"
+  },
+  "license": "MIT"
+}

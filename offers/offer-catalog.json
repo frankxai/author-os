@@ -1,0 +1,48 @@
+{
+  "version": "2026.07.v1",
+  "strategy": "Open core plus paid local app, managed cloud, marketplace packs, and concierge agentic services.",
+  "offers": [
+    {
+      "id": "open-core",
+      "name": "Agentic Author OS Open Core",
+      "price": "Free",
+      "includes": ["CLI", "local project files", "story graph", "basic MCP", "markdown export", "BYOK architecture"]
+    },
+    {
+      "id": "foundry-pack",
+      "name": "AuthorOS Foundry Pack",
+      "price": "$149-$199",
+      "includes": ["fiction pack", "nonfiction pack", "seven-pass revision", "publishing checklist", "installable cockpit starter"]
+    },
+    {
+      "id": "pro-local",
+      "name": "Pro Local",
+      "price": "$19/mo or $149/yr",
+      "includes": ["premium packs", "advanced quality gates", "local MCP", "BYOK", "local-only lifetime eligibility"]
+    },
+    {
+      "id": "cloud-creator",
+      "name": "Cloud Creator",
+      "price": "$29/mo",
+      "includes": ["hosted cockpit", "backup", "sync", "marketplace purchases", "$10 managed AI credits/month"]
+    },
+    {
+      "id": "cloud-studio",
+      "name": "Cloud Studio",
+      "price": "$79/mo",
+      "includes": ["multi-project workflows", "collaboration", "launch assets", "analytics", "$40 managed AI credits/month"]
+    },
+    {
+      "id": "agency-small-press",
+      "name": "Agency / Small Press",
+      "price": "$249-$599/mo",
+      "includes": ["seats", "roles", "client workspaces", "editorial queues", "$150+ managed AI credits/month"]
+    },
+    {
+      "id": "concierge-setup",
+      "name": "Concierge Setup",
+      "price": "$499-$1.5k",
+      "includes": ["manuscript import", "memory setup", "BYOK setup", "first cockpit", "first quality report"]
+    }
+  ]
+}

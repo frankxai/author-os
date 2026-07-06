@@ -1,0 +1,100 @@
+{
+  "url": "http://127.0.0.1:4317/projects/prj_luminous_archive/cockpit",
+  "capturedAt": "2026-07-04T21:49:57.915Z",
+  "results": [
+    {
+      "case": "desktop",
+      "screenshot": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\cockpit-desktop.png",
+      "metrics": {
+        "title": "Arcanea Author Cockpit",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "documentWidth": 1440,
+        "clientWidth": 1440,
+        "bodyWidth": 1440,
+        "overflowX": 0,
+        "pageHeight": 1753,
+        "requiredText": {
+          "cockpit": true,
+          "project": true,
+          "canvas": true,
+          "corkboard": true,
+          "agents": true,
+          "publishing": true,
+          "trust": true,
+          "credits": true
+        },
+        "selectorPresence": {
+          "[data-cockpit-shell]": true,
+          "[data-manuscript-spine]": true,
+          "[data-corkboard]": true,
+          "[data-story-canvas]": true,
+          "[data-inspector]": true,
+          "[data-agent-rail]": true,
+          "[data-publish-strip]": true,
+          "[data-dam-drawer]": true,
+          "[data-trust-layer]": true
+        },
+        "stageMetrics": {
+          "clientWidth": 692,
+          "scrollWidth": 692,
+          "clientHeight": 558,
+          "scrollHeight": 558,
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        "visibleOverflow": [],
+        "response404s": []
+      }
+    },
+    {
+      "case": "mobile",
+      "screenshot": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\cockpit-mobile.png",
+      "metrics": {
+        "title": "Arcanea Author Cockpit",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "documentWidth": 390,
+        "clientWidth": 390,
+        "bodyWidth": 390,
+        "overflowX": 0,
+        "pageHeight": 5026,
+        "requiredText": {
+          "cockpit": true,
+          "project": true,
+          "canvas": true,
+          "corkboard": true,
+          "agents": true,
+          "publishing": true,
+          "trust": true,
+          "credits": true
+        },
+        "selectorPresence": {
+          "[data-cockpit-shell]": true,
+          "[data-manuscript-spine]": true,
+          "[data-corkboard]": true,
+          "[data-story-canvas]": true,
+          "[data-inspector]": true,
+          "[data-agent-rail]": true,
+          "[data-publish-strip]": true,
+          "[data-dam-drawer]": true,
+          "[data-trust-layer]": true
+        },
+        "stageMetrics": {
+          "clientWidth": 282,
+          "scrollWidth": 670,
+          "clientHeight": 618,
+          "scrollHeight": 618,
+          "overflowX": "auto",
+          "overflowY": "auto"
+        },
+        "visibleOverflow": [],
+        "response404s": []
+      }
+    }
+  ]
+}

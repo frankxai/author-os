@@ -1,0 +1,123 @@
+{
+  "route": "/projects",
+  "generatedAt": "2026-07-06T01:36:30.193Z",
+  "results": [
+    {
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "mode": "seed"
+      },
+      "path": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\workspace-desktop.png",
+      "metrics": {
+        "viewportWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "documentScrollWidth": 1440,
+        "horizontalOverflow": false,
+        "clippedText": [
+          {
+            "tag": "h2",
+            "className": "",
+            "text": "Books, canon, agents, assets, and launch state in one room.",
+            "rect": {
+              "left": 45,
+              "right": 726.03125,
+              "width": 681.03125,
+              "height": 355.1875
+            },
+            "clipped": true,
+            "outOfViewport": false,
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        ],
+        "outOfViewportText": [],
+        "workspaceShellPresent": true,
+        "projectCards": 1,
+        "modeTabs": 3,
+        "textareaCount": 0
+      }
+    },
+    {
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 1000,
+        "mode": "seed"
+      },
+      "path": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\workspace-mobile.png",
+      "metrics": {
+        "viewportWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "horizontalOverflow": false,
+        "clippedText": [],
+        "outOfViewportText": [],
+        "workspaceShellPresent": true,
+        "projectCards": 1,
+        "modeTabs": 3,
+        "textareaCount": 0
+      }
+    },
+    {
+      "viewport": {
+        "name": "import-desktop",
+        "width": 1440,
+        "height": 1100,
+        "mode": "text"
+      },
+      "path": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\workspace-import-desktop.png",
+      "metrics": {
+        "viewportWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "documentScrollWidth": 1440,
+        "horizontalOverflow": false,
+        "clippedText": [
+          {
+            "tag": "h2",
+            "className": "",
+            "text": "Books, canon, agents, assets, and launch state in one room.",
+            "rect": {
+              "left": 45,
+              "right": 726.03125,
+              "width": 681.03125,
+              "height": 355.1875
+            },
+            "clipped": true,
+            "outOfViewport": false,
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        ],
+        "outOfViewportText": [],
+        "workspaceShellPresent": true,
+        "projectCards": 1,
+        "modeTabs": 3,
+        "textareaCount": 1
+      }
+    },
+    {
+      "viewport": {
+        "name": "import-mobile",
+        "width": 390,
+        "height": 1100,
+        "mode": "text"
+      },
+      "path": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\workspace-import-mobile.png",
+      "metrics": {
+        "viewportWidth": 390,
+        "bodyScrollWidth": 390,
+        "documentScrollWidth": 390,
+        "horizontalOverflow": false,
+        "clippedText": [],
+        "outOfViewportText": [],
+        "workspaceShellPresent": true,
+        "projectCards": 1,
+        "modeTabs": 3,
+        "textareaCount": 1
+      }
+    }
+  ],
+  "status": "pass"
+}

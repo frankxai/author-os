@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-07-06T00:16:18.987Z",
+  "url": "http://127.0.0.1:3220/billing",
+  "checks": {
+    "desktopNoHorizontalOverflow": true,
+    "mobileNoHorizontalOverflow": true,
+    "desktopPrimaryActionVisible": true,
+    "mobilePrimaryActionVisible": true,
+    "cloudOfferCardsPresent": true,
+    "entitlementStatsPresent": true,
+    "evidenceRowsPresent": true,
+    "noDetectedTextOverflow": true
+  },
+  "desktop": {
+    "viewport": {
+      "width": 1440,
+      "height": 1200
+    },
+    "screenshotPath": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\billing-desktop.png",
+    "metrics": {
+      "title": "Arcanea Author Cockpit",
+      "h1": "Billing command deck",
+      "bodyScrollWidth": 1440,
+      "documentClientWidth": 1440,
+      "bodyScrollHeight": 1200,
+      "documentClientHeight": 1200,
+      "pageHorizontalOverflow": false,
+      "topbar": {
+        "x": 16,
+        "y": 16,
+        "width": 1408,
+        "height": 93
+      },
+      "hero": {
+        "x": 16,
+        "y": 123,
+        "width": 1408,
+        "height": 338
+      },
+      "primaryAction": {
+        "x": 861,
+        "y": 196,
+        "width": 378,
+        "height": 44
+      },
+      "portalActionDisabled": true,
+      "offerCardCount": 3,
+      "statTileCount": 4,
+      "evidenceRowCount": 4,
+      "visibleTextOverflowCount": 0,
+      "visibleTextOverflows": []
+    }
+  },
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 1200,
+      "isMobile": true
+    },
+    "screenshotPath": "C:\\Users\\frank\\starlight\\repos\\author-os\\apps\\cockpit\\.visual-qa\\billing-mobile.png",
+    "metrics": {
+      "title": "Arcanea Author Cockpit",
+      "h1": "Billing command deck",
+      "bodyScrollWidth": 390,
+      "documentClientWidth": 390,
+      "bodyScrollHeight": 2788,
+      "documentClientHeight": 1200,
+      "pageHorizontalOverflow": false,
+      "topbar": {
+        "x": 8,
+        "y": 8,
+        "width": 374,
+        "height": 168
+      },
+      "hero": {
+        "x": 8,
+        "y": 190,
+        "width": 374,
+        "height": 679
+      },
+      "primaryAction": {
+        "x": 27,
+        "y": 556,
+        "width": 336,
+        "height": 44
+      },
+      "portalActionDisabled": true,
+      "offerCardCount": 3,
+      "statTileCount": 4,
+      "evidenceRowCount": 4,
+      "visibleTextOverflowCount": 0,
+      "visibleTextOverflows": []
+    }
+  }
+}

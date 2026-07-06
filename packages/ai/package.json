@@ -1,0 +1,17 @@
+{
+  "name": "@author-os/ai",
+  "version": "0.2.0",
+  "description": "Model routing, cost ledger, and AI Gateway call planning for Agentic Author OS.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node tests/run-tests.js"
+  },
+  "dependencies": {
+    "@author-os/core": "workspace:*"
+  },
+  "license": "MIT"
+}

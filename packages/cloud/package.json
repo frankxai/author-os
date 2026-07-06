@@ -1,0 +1,18 @@
+{
+  "name": "@author-os/cloud",
+  "version": "0.2.0",
+  "description": "Cloud adapter contracts for Vercel Postgres, Blob, Workflows, Sandbox, entitlements, and credits.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./migrations": "./src/migrations.js"
+  },
+  "scripts": {
+    "test": "node tests/run-tests.js"
+  },
+  "dependencies": {
+    "@author-os/core": "workspace:*"
+  },
+  "license": "MIT"
+}

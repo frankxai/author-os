@@ -1,14 +1,28 @@
 {
   "name": "author-os-cli",
-  "version": "0.1.2",
-  "description": "AuthorOS \u2014 AI-native author operating system CLI",
+  "version": "0.2.0",
+  "description": "Agentic Author OS — open-core author operating system, cockpit, CLI, and MCP tool surface",
   "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "bin": {
     "author-os": "bin/author.js"
   },
   "scripts": {
     "start": "node bin/author.js",
-    "test": "node bin/quality-check.js --self-test"
+    "doctor": "node bin/author.js doctor",
+    "mcp": "node packages/mcp/bin/author-os-mcp.js",
+    "runtime:check": "node scripts/verify-runtime-contract.mjs",
+    "evidence:production": "node bin/author.js production-evidence",
+    "cockpit:dev": "pnpm --filter @author-os/cockpit dev",
+    "cockpit:build": "pnpm --filter @author-os/cockpit build",
+    "cockpit:smoke": "node scripts/smoke-hosted-cockpit.mjs",
+    "verify:live": "node scripts/verify-live-cockpit.mjs",
+    "ci:local": "npm run runtime:check && npm test && node bin/author.js cloud-env --json --no-env-file && node bin/author.js setup-contract --json --no-env-file && node bin/author.js launch-plan --json --no-env-file && node bin/author.js cloud-migrate --dry-run --json --no-env-file && node bin/author.js cloud-readiness --json --no-env-file && node bin/author.js production-evidence --no-env-file && pnpm --filter @author-os/cockpit build && node scripts/smoke-hosted-cockpit.mjs",
+    "test": "node bin/quality-check.js --self-test && node packages/core/tests/run-tests.js && node packages/ai/tests/run-tests.js && node packages/cloud/tests/run-tests.js && node packages/mcp/tests/run-tests.js && node apps/cockpit/tests/run-tests.js && node scripts/test-cli-init.mjs && node scripts/test-cli-cloud-env-apply.mjs && node scripts/test-live-verifier-static.mjs && node scripts/test-production-evidence-remote-audit.mjs && node scripts/test-mcp-client-config.mjs"
   },
   "keywords": [
     "ai",
@@ -25,10 +39,30 @@
     "url": "https://github.com/frankxai/author-os"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24 <25"
+  },
+  "dependencies": {
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "next": "^16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "files": [
+    "apps/cockpit/.env.example",
+    "apps/cockpit/app/",
+    "apps/cockpit/lib/",
+    "apps/cockpit/*.md",
+    "apps/cockpit/*.mjs",
+    "apps/cockpit/design-loop-evidence.json",
+    "apps/cockpit/package.json",
+    "apps/cockpit/tests/",
     "bin/",
+    "docs/",
+    "offers/",
+    "packages/",
+    "scripts/",
     "skills/",
     "memory/",
     "templates/",

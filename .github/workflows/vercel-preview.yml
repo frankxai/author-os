@@ -1,0 +1,82 @@
+name: Vercel Preview
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_CLI_VERSION: 54.14.0
+
+jobs:
+  deploy-preview:
+    name: Prebuilt Preview
+    if: vars.AUTHOR_OS_USE_ACTIONS_VERCEL == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: npm run runtime:check
+
+      - run: npm test
+
+      - run: npm install -g vercel@${{ env.VERCEL_CLI_VERSION }}
+
+      - name: Pull Vercel env
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - run: node bin/author.js cloud-env --json --env-file .env.local
+
+      - run: node bin/author.js launch-plan --json --env-file .env.local
+
+      - run: node bin/author.js cloud-migrate --dry-run --json --env-file .env.local
+
+      - run: node bin/author.js cloud-readiness --json --env-file .env.local
+
+      - run: node bin/author.js production-evidence --env-file .env.local
+
+      - run: pnpm --filter @author-os/cockpit build
+
+      - run: node scripts/smoke-hosted-cockpit.mjs
+
+      - name: Vercel build
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deploy prebuilt preview
+        id: deploy
+        run: echo "url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Preview URL
+        run: echo "Preview: ${{ steps.deploy.outputs.url }}"
+
+      - name: Verify live preview
+        run: node scripts/verify-live-cockpit.mjs "${{ steps.deploy.outputs.url }}" --json
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

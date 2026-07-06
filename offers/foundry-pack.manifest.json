@@ -1,0 +1,29 @@
+{
+  "id": "authoros-foundry-pack",
+  "version": "2026.07.v1",
+  "name": "AuthorOS Foundry Pack",
+  "license": "commercial-pack",
+  "compatibility": {
+    "authorOsGraph": "2026.07.v1",
+    "cli": ">=0.2.0",
+    "cockpit": ">=0.2.0"
+  },
+  "packs": [
+    "fiction-studio",
+    "nonfiction-authority",
+    "seven-pass-revision",
+    "publishing-ops",
+    "romance-erotica-premium",
+    "launch-assets"
+  ],
+  "qaGate": {
+    "requiresHumanReview": true,
+    "requiresAssetProvenance": true,
+    "requiresExportTest": true
+  },
+  "marketplace": {
+    "foundingCreatorSplit": "90/10",
+    "standardSplit": "80/20",
+    "platformPromotedSplit": "70/30"
+  }
+}

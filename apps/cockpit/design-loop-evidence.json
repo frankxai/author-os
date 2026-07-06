@@ -1,0 +1,166 @@
+{
+  "version": "1.0",
+  "task": "Build Agentic Author OS / Arcanea Author Cockpit V1 product, account, production-ops, remote env audit, activation-ready project creation, and Foundry Pack installation surfaces",
+  "surface": "/projects, /projects/[id]/cockpit, /billing, /ops, /setup, hosted pack install controls, and setup remote Vercel env audit command evidence",
+  "audience": "AI-native fiction and nonfiction authors, small presses, Arcanea operators, and launch engineers who need a dense workspace hub with activation-ready starter projects, manuscript import, canon, canvas, DAM, agent, publishing, entitlement, billing, production setup, and launch activation cockpit.",
+  "standards": [
+    "C:/Users/frank/starlight/repos/_intelligence/operating-system.md",
+    "C:/Users/frank/starlight/repos/_intelligence/design.md",
+    "C:/Users/frank/starlight/repos/_intelligence/quality-gates.md",
+    "C:/Users/frank/starlight/repos/design-agent-standards/PREMIUM_ASSET_STANDARD.md",
+    "C:/Users/frank/starlight/repos/design-agent-standards/AGENTIC_DESIGN_LOOP.md",
+    "C:/Users/frank/starlight/repos/starlight-design-intelligence/brand-packs/arcanea/BRAND.md"
+  ],
+  "references": [
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/SCENE_BRIEF.md",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/BILLING_SCENE_BRIEF.md",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/OPS_SCENE_BRIEF.md",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/SETUP_SCENE_BRIEF.md",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/WORKSPACE_SCENE_BRIEF.md",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/visual-qa-results.json",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/billing-visual-qa-results.json",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/ops-visual-qa-results.json",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/setup-visual-qa-results.json",
+    "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/workspace-visual-qa-results.json",
+    "C:/Users/frank/starlight/repos/author-os/scripts/smoke-hosted-cockpit.mjs"
+  ],
+  "direction": {
+    "keep": "Dense working cockpit, activation-ready starter seed, hosted manuscript-text import, portable graph import, visible story graph/canvas, real manuscript/canon/publishing affordances, account state, billing evidence, production blocker evidence, low-card nesting, no landing-page posture.",
+    "avoid": "Generic SaaS dashboard, decorative filler, fake hero art, oversized marketing type inside panels, hidden author workflows, and black-box starter prose that authors cannot audit.",
+    "signature": "Arcanea dark workbench with workspace project stack, starter outline generation, manuscript intake, Foundry Pack installer, manuscript spine, story canvas, corkboard, inspector, DAM strip, agent rail, publish status bar, billing command deck, production launch ops, setup contract, and remote Vercel env audit command in one product system.",
+    "system": "Vercel-first Next.js App Router surface backed by portable open-core graph view models and stable Playwright hooks."
+  },
+  "asset_quality": {
+    "tier": "C",
+    "source_method": "browser-capture",
+    "provenance": "owned",
+    "why_premium": "The primary asset is exact code-rendered product UI rather than stock art or generated filler; screenshots prove the actual workspace, cockpit, billing, and production-ops surfaces at desktop and mobile sizes.",
+    "shortcut_risk": "low",
+    "context_tested": true
+  },
+  "artifacts": [
+    {
+      "kind": "desktop-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/cockpit-desktop.png",
+      "inspected": true
+    },
+    {
+      "kind": "mobile-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/cockpit-mobile.png",
+      "inspected": true
+    },
+    {
+      "kind": "qa-metrics",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/visual-qa-results.json",
+      "inspected": true
+    },
+    {
+      "kind": "desktop-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/billing-desktop.png",
+      "inspected": true
+    },
+    {
+      "kind": "mobile-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/billing-mobile.png",
+      "inspected": true
+    },
+    {
+      "kind": "qa-metrics",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/billing-visual-qa-results.json",
+      "inspected": true
+    },
+    {
+      "kind": "desktop-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/ops-desktop.png",
+      "inspected": true
+    },
+    {
+      "kind": "mobile-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/ops-mobile.png",
+      "inspected": true
+    },
+    {
+      "kind": "qa-metrics",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/ops-visual-qa-results.json",
+      "inspected": true
+    },
+    {
+      "kind": "desktop-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/setup-desktop.png",
+      "inspected": true
+    },
+    {
+      "kind": "mobile-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/setup-mobile.png",
+      "inspected": true
+    },
+    {
+      "kind": "qa-metrics",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/setup-visual-qa-results.json",
+      "inspected": true
+    },
+    {
+      "kind": "desktop-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/workspace-desktop.png",
+      "inspected": true
+    },
+    {
+      "kind": "mobile-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/workspace-mobile.png",
+      "inspected": true
+    },
+    {
+      "kind": "desktop-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/workspace-import-desktop.png",
+      "inspected": true
+    },
+    {
+      "kind": "mobile-browser-capture",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/workspace-import-mobile.png",
+      "inspected": true
+    },
+    {
+      "kind": "qa-metrics",
+      "path_or_url": "C:/Users/frank/starlight/repos/author-os/apps/cockpit/.visual-qa/workspace-visual-qa-results.json",
+      "inspected": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "asset-tier",
+      "status": "pass",
+      "notes": "Tier C exact UI/system asset; no generated or external media used as the primary product proof."
+    },
+    {
+      "name": "export-inspection",
+      "status": "pass",
+      "notes": "Desktop and mobile browser captures inspected for workspace seed mode, workspace manuscript import mode, cockpit, billing, ops, and setup. Workspace has no horizontal overflow and mobile stacks intentionally; the automated desktop headline clip candidate was visual-inspected as a font-metric false positive. Billing, ops, and setup have no horizontal overflow or detected text clipping; cockpit desktop has no horizontal overflow or clipped canvas nodes; cockpit mobile uses contained canvas scrolling. The setup surface now exposes remote Vercel env audit command evidence, and the hosted smoke gate checks the rendered Foundry Pack installer and cockpit pack trust telemetry."
+    },
+    {
+      "name": "responsive-layout",
+      "status": "pass",
+      "notes": "390px mobile workspace seed/import, billing, ops, and setup captures have no page-level horizontal overflow; project stack, create/import panel, text import textarea, activation queue, account actions, entitlements, billing evidence, launch stages, connector cards, priority actions, environment groups, runtime state, remote env audit command, and proof commands stack cleanly."
+    },
+    {
+      "name": "accessibility-baseline",
+      "status": "pass",
+      "notes": "Major workspace, starter/import tabs, cockpit, billing, setup, and ops regions have aria labels and stable data hooks for browser QA coverage. Starter templates use a native select control and compact labeled fields."
+    },
+    {
+      "name": "reduced-motion",
+      "status": "pass",
+      "notes": "No required motion; CSS includes reduced-motion override."
+    },
+    {
+      "name": "external-asset-provenance",
+      "status": "not_applicable",
+      "notes": "No external visual assets were introduced."
+    }
+  ],
+  "score": {
+    "total": 28,
+    "max": 30,
+    "notes": "Ship as a strong V1 cockpit, account, import, and operator foundation; future iteration should add live canvas interactions, richer asset thumbnails, authenticated project data, production Stripe customer state, and deeper Vercel deployment evidence beyond remote env name presence."
+  },
+  "decision": "ship"
+}
