@@ -1338,6 +1338,14 @@ button {
   line-height: 1.55;
 }
 
+.billing-setup-note {
+  margin-top: 14px;
+  color: #ffcf91 !important;
+  font-size: 0.83rem !important;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .billing-status-line {
   display: flex;
   flex-wrap: wrap;

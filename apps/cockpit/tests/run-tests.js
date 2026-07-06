@@ -92,8 +92,15 @@ assert.ok(mcpRouteSource.includes('install_pack'), 'hosted MCP should expose pac
 
 const packRegistryRouteSource = fs.readFileSync(path.join(appDir, 'api/packs/route.js'), 'utf8');
 assert.ok(packRegistryRouteSource.includes('listPacks'), 'hosted API should expose pack registry');
+assert.ok(packRegistryRouteSource.includes('buildPackRegistry'), 'global pack registry should stay available before provider setup is complete');
+assert.ok(packRegistryRouteSource.includes('createSetupLockedPackListing'), 'global pack registry should return locked setup metadata instead of crashing');
 const projectPackRouteSource = fs.readFileSync(path.join(appDir, 'api/projects/[id]/packs/route.js'), 'utf8');
 assert.ok(projectPackRouteSource.includes('installPack'), 'hosted API should install packs into project graphs');
+
+const billingPageSource = fs.readFileSync(path.join(appDir, 'billing/page.jsx'), 'utf8');
+assert.ok(billingPageSource.includes('readBillingContext'), 'billing surface should catch auth setup failures');
+assert.ok(billingPageSource.includes('readBillingSnapshot'), 'billing surface should catch billing persistence setup failures');
+assert.ok(billingPageSource.includes('Setup status'), 'billing surface should expose setup status without throwing');
 
 const setupPageSource = fs.readFileSync(path.join(appDir, 'setup/page.jsx'), 'utf8');
 assert.ok(setupPageSource.includes('baselinePlan'), 'setup surface should expose the safe baseline env plan');

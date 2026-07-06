@@ -54,13 +54,54 @@ function OfferCard({ offer, active }) {
   );
 }
 
+async function readBillingContext(requestHeaders) {
+  try {
+    return {
+      tenant: await createTenantContextFromHeaders(requestHeaders, null),
+      setupError: null,
+    };
+  } catch (error) {
+    return {
+      tenant: {
+        mode: 'setup-required',
+        workspaceId: 'wrk_setup_required',
+        plan: process.env.AUTHOROS_DEFAULT_PLAN || 'open-core',
+        entitlementSource: 'setup-required',
+      },
+      setupError: {
+        code: error.code || 'SETUP_REQUIRED',
+        message: error.message,
+        status: error.status || 503,
+      },
+    };
+  }
+}
+
+async function readBillingSnapshot(billingAdapter, tenant) {
+  try {
+    return {
+      billing: typeof billingAdapter.getBillingStatus === 'function'
+        ? await billingAdapter.getBillingStatus(tenant.workspaceId, { fallbackPlan: tenant.plan })
+        : createBillingAccountSnapshot({ workspaceId: tenant.workspaceId, fallbackPlan: tenant.plan }),
+      billingError: null,
+    };
+  } catch (error) {
+    return {
+      billing: createBillingAccountSnapshot({ workspaceId: tenant.workspaceId, fallbackPlan: tenant.plan }),
+      billingError: {
+        code: error.code || 'BILLING_STATUS_UNAVAILABLE',
+        message: error.message,
+        status: error.status || 503,
+      },
+    };
+  }
+}
+
 export default async function BillingPage() {
   const requestHeaders = await headers();
-  const tenant = await createTenantContextFromHeaders(requestHeaders, null);
+  const { tenant, setupError } = await readBillingContext(requestHeaders);
   const billingAdapter = getHostedBillingAdapter();
-  const billing = typeof billingAdapter.getBillingStatus === 'function'
-    ? await billingAdapter.getBillingStatus(tenant.workspaceId, { fallbackPlan: tenant.plan })
-    : createBillingAccountSnapshot({ workspaceId: tenant.workspaceId, fallbackPlan: tenant.plan });
+  const { billing, billingError } = await readBillingSnapshot(billingAdapter, tenant);
 
   const currentOffer = getOffer(billing.plan);
   const cloudOffers = ['cloud-creator', 'cloud-studio', 'agency-small-press']
@@ -99,6 +140,11 @@ export default async function BillingPage() {
           <p className="eyebrow">Workspace Plan</p>
           <h2>{currentOffer.layer}</h2>
           <p>{currentOffer.promise}</p>
+          {setupError ? (
+            <p className="billing-setup-note">
+              Setup required: {setupError.code.replace(/_/g, ' ').toLowerCase()}
+            </p>
+          ) : null}
           <div className="billing-status-line">
             <span className={`status-dot ${billing.status === 'active' ? 'status-clear' : 'status-warn'}`} aria-hidden="true" />
             <strong>{formatStatus(billing.status)}</strong>
@@ -152,6 +198,7 @@ export default async function BillingPage() {
             <EvidenceRow label="Latest entitlement" value={billing.entitlement?.id || 'none'} />
             <EvidenceRow label="Latest billing event" value={billing.lastBillingEvent?.eventType || 'none'} />
             <EvidenceRow label="Subscription linked" value={billing.stripeSubscriptionId ? 'yes' : 'no'} />
+            <EvidenceRow label="Setup status" value={setupError ? setupError.code : billingError ? billingError.code : 'ready'} />
           </div>
         </section>
       </section>
