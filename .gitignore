@@ -1,4 +1,8 @@
 
+knowledge/_raw/
+__pycache__/
+.pytest_cache/
+
 # Starlight/ACOS temporary files
 .agent/
 *.log

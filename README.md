@@ -57,6 +57,8 @@ python3 memory/memsearch-sqlite.py status
 
 Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in your environment for embeddings.
 
+Craft canon (public-domain, HITL pending): [`knowledge/README.md`](./knowledge/README.md)
+
 ---
 
 ## Architecture

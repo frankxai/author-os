@@ -1,0 +1,21 @@
+{
+  "id": "eval-anti-sludge",
+  "domain": "author",
+  "license": "eval-synthetic",
+  "banned_lexicon": [
+    "delve",
+    "testament",
+    "tapestry",
+    "pivotal",
+    "beacon",
+    "unleash",
+    "paramount",
+    "underscore",
+    "vibrant",
+    "it is important to remember that"
+  ],
+  "pass_example": "The kettle clicked off. She did not pour.",
+  "fail_example": "It is important to remember that her journey was a vibrant tapestry and a testament to resilience.",
+  "synthetic": true,
+  "notes": "Negative example is labeled synthetic. Not human canon."
+}
