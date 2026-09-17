@@ -154,6 +154,95 @@ export const authorOsToolDefinitions = [
       },
     },
   },
+  {
+    name: 'extract_codex_entities',
+    description: 'Extract @Character, #Location, and !Rule/Lore inline tags from prose and resolve against project entities.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        root: { ...stringSchema },
+        text: { ...stringSchema, description: 'Prose or markdown text to parse for entity mentions.' },
+      },
+      required: ['text'],
+    },
+  },
+  {
+    name: 'create_character_diamond',
+    description: 'Generate a 5-point psychological character diamond (Desire, Need, Lie, Wound, Mask) with voice tone and tics.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { ...stringSchema, description: 'Character name.' },
+        desire: { ...stringSchema, description: 'Conscious external goal.' },
+        need: { ...stringSchema, description: 'Internal spiritual or psychological need.' },
+        lie: { ...stringSchema, description: 'Core misconception about the world.' },
+        wound: { ...stringSchema, description: 'Origin trauma or ghost event.' },
+        mask: { ...stringSchema, description: 'Public persona presented to the world.' },
+        voiceTone: { ...stringSchema, description: 'Voice and cadence guidelines.' },
+        distinctTics: { type: 'array', items: { type: 'string' }, description: 'Speech habits or verbal tics.' },
+      },
+      required: ['name'],
+    },
+  },
+  {
+    name: 'run_seven_pass_revision',
+    description: 'Run the Seven-Pass Revision Ritual on scene prose (Structural, Character, Scene, Dialogue, Prose, Continuity, Polish).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        root: { ...stringSchema },
+        sceneId: { ...stringSchema, description: 'Optional scene id to fetch from local project.' },
+        text: { ...stringSchema, description: 'Optional raw scene prose to evaluate directly.' },
+        pov: { ...stringSchema, description: 'POV character name.' },
+      },
+    },
+  },
+  {
+    name: 'anti_slop_lint',
+    description: 'Run deterministic anti-slop, AI-cliché, filter word, and cadence monotony linting on prose.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        text: { ...stringSchema, description: 'Text to lint for AI slop and stylistic weaknesses.' },
+      },
+      required: ['text'],
+    },
+  },
+  {
+    name: 'format_notion_blocks',
+    description: 'Format an AuthorOS scene and its Seven-Pass audit report into Notion-ready block children for bi-directional sync.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        root: { ...stringSchema },
+        sceneId: { ...stringSchema, description: 'Scene id to format.' },
+      },
+      required: ['sceneId'],
+    },
+  },
+  {
+    name: 'export_epub_manifest',
+    description: 'Build complete ePub 3.0 virtual file structure and navigation manifest for publication.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        root: { ...stringSchema },
+      },
+    },
+  },
+  {
+    name: 'describe_sensory_expansion',
+    description: 'Generate deep 5-sense sensory grounding (Sight, Sound, Scent, Touch, Taste, Atmosphere) and visceral texture for a scene element.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        focus: { ...stringSchema, description: 'The character, room, object, or moment to expand.' },
+        genre: { ...stringSchema, description: 'Texture palette: mythic-fantasy, romantasy, sci-fi-speculative, gothic-thriller, nonfiction-authority.' },
+        senses: { type: 'array', items: { type: 'string' }, description: 'Array of senses: sight, sound, scent, touch, taste, atmosphere.' },
+      },
+      required: ['focus'],
+    },
+  },
 ];
 
 export function buildMcpToolManifest() {

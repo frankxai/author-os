@@ -2404,3 +2404,158 @@ button {
     display: grid;
   }
 }
+
+/* ==========================================================================
+   AuthorOS Living Studios (Codex, Seven-Pass, Sensory, Notion)
+   ========================================================================== */
+
+.codex-studio-panel,
+.seven-pass-studio-panel,
+.sensory-palette-panel,
+.notion-sync-panel {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(18, 22, 28, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.filter-pills,
+.pass-ribbon,
+.genre-select-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill-btn,
+.tab-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #a0aec0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pill-btn.active,
+.tab-btn.active {
+  background: var(--accent-gold, #d8b35c);
+  color: #0f1318;
+  font-weight: 600;
+  border-color: var(--accent-gold, #d8b35c);
+}
+
+.codex-grid,
+.seven-pass-grid,
+.notion-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.codex-entity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.codex-item-btn {
+  text-align: left;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.codex-item-btn.selected {
+  background: rgba(216, 179, 92, 0.12);
+  border-color: rgba(216, 179, 92, 0.4);
+}
+
+.diamond-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.diamond-point {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.diamond-point .point-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #d8b35c;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.pass-ribbon {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pass-tab {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pass-tab.active {
+  border-color: #d8b35c;
+  background: rgba(216, 179, 92, 0.1);
+}
+
+.senses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.sense-box {
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.notion-preview-card {
+  padding: 20px;
+  border-radius: 8px;
+  background: #191919;
+  border: 1px solid #2e2e2e;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+.notion-block-callout {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 4px;
+  margin: 12px 0;
+  background: rgba(255, 255, 255, 0.05);
+}

@@ -93,6 +93,61 @@ try {
   assert.deepEqual(packInstall.installed, ['launch-assets']);
   assert.equal(packInstall.noProseGenerated, true);
 
+  // Test extract_codex_entities
+  const extracted = JSON.parse((await callAuthorOsTool('extract_codex_entities', {
+    root,
+    text: 'In @[The High Citadel], @Elena spoke with #SunGate.',
+  })).content[0].text);
+  assert.equal(extracted.extractedTags.length, 3);
+
+  // Test create_character_diamond
+  const diamond = JSON.parse((await callAuthorOsTool('create_character_diamond', {
+    name: 'Elena',
+    desire: 'Cure the fading magic',
+    need: 'Accept mortality',
+    lie: 'She alone must carry the burden',
+    wound: 'Failed her mentor',
+  })).content[0].text);
+  assert.equal(diamond.success, true);
+  assert.equal(diamond.diamond.name, 'Elena');
+
+  // Test anti_slop_lint
+  const slopLint = JSON.parse((await callAuthorOsTool('anti_slop_lint', {
+    text: 'A testament to their bravery, she felt the tapestry of fate begin to shake.',
+  })).content[0].text);
+  assert.equal(slopLint.success, true);
+  assert.ok(slopLint.report.cliches.length >= 2);
+
+  // Test run_seven_pass_revision
+  const sevenPass = JSON.parse((await callAuthorOsTool('run_seven_pass_revision', {
+    root,
+    sceneId: created.scene.id,
+  })).content[0].text);
+  assert.equal(sevenPass.success, true);
+  assert.equal(sevenPass.report.passes.length, 7);
+
+  // Test format_notion_blocks
+  const notionRes = JSON.parse((await callAuthorOsTool('format_notion_blocks', {
+    root,
+    sceneId: created.scene.id,
+  })).content[0].text);
+  assert.equal(notionRes.success, true);
+  assert.ok(notionRes.blockCount >= 2);
+
+  // Test export_epub_manifest
+  const epubRes = JSON.parse((await callAuthorOsTool('export_epub_manifest', { root })).content[0].text);
+  assert.equal(epubRes.success, true);
+  assert.equal(epubRes.epub.format, 'epub3');
+
+  // Test describe_sensory_expansion
+  const sensoryRes = JSON.parse((await callAuthorOsTool('describe_sensory_expansion', {
+    focus: 'The Bronze Door',
+    genre: 'mythic-fantasy',
+  })).content[0].text);
+  assert.equal(sensoryRes.success, true);
+  assert.equal(sensoryRes.focus, 'The Bronze Door');
+  assert.ok(sensoryRes.expansion.sight.length > 0);
+
   const project = readAuthorProject(root);
   assert.equal(project.agentRuns.length, 2);
   assert.equal(project.suggestions.length, 1);

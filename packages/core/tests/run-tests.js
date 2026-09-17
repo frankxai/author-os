@@ -166,4 +166,94 @@ assert.ok(cockpit.readiness.checks.length > 0);
 assert.equal(cockpit.context.entitlements.offerId, 'cloud-studio');
 assert.ok(offerCatalog.some(offer => offer.id === 'cloud-studio'));
 
+// Living Codex Engine Tests
+import {
+  extractInlineTags,
+  resolveMentionsAgainstEntities,
+  createCharacterDiamond,
+  buildEntityAppearanceMatrix,
+  auditAntiSlop,
+  runSevenPassAudit,
+  formatNotionSceneBlocks,
+  compileManuscriptMarkdown,
+  buildEpubPackageStructure,
+} from '../src/index.js';
+
+const taggedText = 'In @[The Luminous Archive], @Mira met #ArchiveStacks and broke the !GoldContract.';
+const extractedTags = extractInlineTags(taggedText);
+assert.equal(extractedTags.length, 4);
+assert.equal(extractedTags[0].name, 'The Luminous Archive');
+assert.equal(extractedTags[1].name, 'Mira');
+assert.equal(extractedTags[2].name, 'ArchiveStacks');
+assert.equal(extractedTags[3].name, 'GoldContract');
+
+const mentionResolution = resolveMentionsAgainstEntities(
+  [{ name: 'Mira Vale', kind: 'Character' }, { name: 'Unknown Lord', kind: 'Character' }],
+  sampleProject.entities
+);
+assert.equal(mentionResolution.resolved.length, 1);
+assert.equal(mentionResolution.resolved[0].matchedEntity.id, 'ent_mira');
+assert.equal(mentionResolution.unmapped.length, 1);
+
+const diamond = createCharacterDiamond({
+  name: 'Mira Vale',
+  desire: 'Find her lost history',
+  need: 'Accept her connection to the living books',
+  lie: 'She is merely an archivist',
+  wound: 'Her childhood memory was traded away',
+});
+assert.equal(diamond.name, 'Mira Vale');
+assert.equal(diamond.points.desire, 'Find her lost history');
+assert.ok(diamond.internalConflictIndex > 0.5);
+
+const appearanceMatrix = buildEntityAppearanceMatrix(sampleProject);
+assert.ok(appearanceMatrix['ent_mira'].totalSceneCount >= 3);
+
+// Anti-Slop & Stylistic Linter Tests
+const slopText = 'A testament to their courage, a shiver down her spine began to shake. He saw the tapestry of fate unfold.';
+const slopReport = auditAntiSlop(slopText);
+assert.ok(slopReport.cliches.length >= 2);
+assert.ok(slopReport.filterWords.length >= 1);
+assert.ok(slopReport.score < 80);
+
+const cleanText = [
+  'Mira stepped across the cold bronze threshold, pausing as the scent of aged cedar and ozone reached her.',
+  'Beneath her boots, the floorstones vibrated with low resonance, echoing the heartbeat of the sealed archive.',
+  'She pressed her palm against the shelf, listening intently. The parchment glowed with faint amber veins.',
+  '"I am here for the lost ledger," she whispered, her voice steady despite the shadows gathering near the ceiling.',
+  'The archive answered not with words, but with the sudden whisper of turning pages.',
+].join(' ');
+const cleanReport = auditAntiSlop(cleanText);
+assert.equal(cleanReport.cliches.length, 0);
+assert.ok(cleanReport.score >= 90);
+
+// Seven-Pass Revision Engine Tests
+const sevenPassReport = runSevenPassAudit(cleanText, { pov: 'Mira', entityIds: ['ent_mira'] }, sampleProject);
+assert.equal(sevenPassReport.passes.length, 7);
+assert.ok(sevenPassReport.overallScore >= 80);
+
+// Notion Bridge Tests
+const notionBlocks = formatNotionSceneBlocks(sampleProject.scenes[0], sevenPassReport);
+assert.ok(notionBlocks.length >= 3);
+assert.equal(notionBlocks[0].type, 'heading_2');
+assert.ok(notionBlocks.some(b => b.type === 'callout'));
+
+// Exporter Tests
+const fullMarkdown = compileManuscriptMarkdown(sampleProject);
+assert.ok(fullMarkdown.includes('# The Luminous Archive'));
+assert.ok(fullMarkdown.includes('## The Door That Remembered Her'));
+
+const epubPackage = buildEpubPackageStructure(sampleProject);
+assert.equal(epubPackage.format, 'epub3');
+assert.ok(epubPackage.packageFiles['mimetype']);
+assert.ok(epubPackage.packageFiles['OEBPS/nav.xhtml']);
+
+// Sensory Expansion Tests
+import { generateSensoryExpansion } from '../src/index.js';
+const sensory = generateSensoryExpansion({ focus: 'The Living Archive', genre: 'mythic-fantasy' });
+assert.equal(sensory.focus, 'The Living Archive');
+assert.ok(sensory.expansion.sight.length > 0);
+assert.ok(sensory.expansion.scent.length > 0);
+assert.ok(sensory.suggestedProsePrompt.includes('Describe The Living Archive'));
+
 console.log('Core tests passed.');

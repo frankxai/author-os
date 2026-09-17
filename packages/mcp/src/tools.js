@@ -6,6 +6,14 @@ import {
   exportBookMarkdown,
   generateCharacterBoard,
   runContinuityCheck,
+  extractInlineTags,
+  resolveMentionsAgainstEntities,
+  createCharacterDiamond,
+  runSevenPassAudit,
+  auditAntiSlop,
+  formatNotionSceneBlocks,
+  buildEpubPackageStructure,
+  generateSensoryExpansion,
 } from '../../core/src/index.js';
 import {
   appendLocalAuditArtifacts,
@@ -160,6 +168,88 @@ export async function callAuthorOsTool(name, input = {}, options = {}) {
         noProseGenerated: result.noProseGenerated,
       });
     }
+    case 'extract_codex_entities': {
+      const project = readAuthorProject(root);
+      const tags = extractInlineTags(input.text || '');
+      const resolution = resolveMentionsAgainstEntities(tags, project.entities || []);
+      return textResult({
+        extractedTags: tags,
+        resolved: resolution.resolved,
+        unmapped: resolution.unmapped,
+      });
+    }
+    case 'create_character_diamond': {
+      const diamond = createCharacterDiamond(input);
+      return textResult({
+        success: true,
+        diamond,
+      });
+    }
+    case 'run_seven_pass_revision': {
+      const project = readAuthorProject(root);
+      let text = input.text;
+      let sceneMeta = { pov: input.pov };
+
+      if (input.sceneId) {
+        const found = (project.scenes || []).find(s => s.id === input.sceneId);
+        if (found) {
+          text = text || found.text;
+          sceneMeta = { ...found, ...sceneMeta };
+        }
+      }
+
+      const report = runSevenPassAudit(text || '', sceneMeta, project);
+      return textResult({
+        success: true,
+        sceneId: input.sceneId || null,
+        report,
+      });
+    }
+    case 'anti_slop_lint': {
+      const report = auditAntiSlop(input.text || '');
+      return textResult({
+        success: true,
+        report,
+      });
+    }
+    case 'format_notion_blocks': {
+      const project = readAuthorProject(root);
+      const scene = (project.scenes || []).find(s => s.id === input.sceneId);
+      if (!scene) {
+        return textResult({
+          success: false,
+          error: { code: 'SCENE_NOT_FOUND', message: `Scene not found: ${input.sceneId}` },
+        });
+      }
+      const audit = runSevenPassAudit(scene.text || '', scene, project);
+      const blocks = formatNotionSceneBlocks(scene, audit);
+      return textResult({
+        success: true,
+        sceneId: scene.id,
+        blockCount: blocks.length,
+        blocks,
+      });
+    }
+    case 'export_epub_manifest': {
+      const project = readAuthorProject(root);
+      const epub = buildEpubPackageStructure(project);
+      return textResult({
+        success: true,
+        epub,
+      });
+    }
+    case 'describe_sensory_expansion': {
+      const result = generateSensoryExpansion({
+        focus: input.focus,
+        genre: input.genre || 'mythic-fantasy',
+        senses: input.senses,
+      });
+      return textResult({
+        success: true,
+        ...result,
+      });
+    }
+
     default:
       return textResult({
         success: false,

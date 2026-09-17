@@ -3,6 +3,10 @@ import {
   createTenantContextFromHeaders,
   getHostedProjectService,
 } from '../../../../lib/hosted.js';
+import { LivingCodexStudio } from './LivingCodexStudio.jsx';
+import { SevenPassStudio } from './SevenPassStudio.jsx';
+import { SensoryExpansionPalette } from './SensoryExpansionPalette.jsx';
+import { NotionSyncCenter } from './NotionSyncCenter.jsx';
 
 function Metric({ label, value, tone = 'neutral' }) {
   return (
@@ -175,6 +179,12 @@ export default async function CockpitPage({ params }) {
               </ol>
             </div>
           </section>
+
+          {/* Interactive AuthorOS Living Studios */}
+          <LivingCodexStudio entities={context.project.entities || cockpit.codex || []} relationships={cockpit.relationshipGraph?.edges || []} />
+          <SevenPassStudio scenes={cockpit.corkboard || []} />
+          <SensoryExpansionPalette />
+          <NotionSyncCenter projectId={id} />
         </section>
 
         <aside className="inspector-panel" aria-label="Inspector and agents" data-inspector>
