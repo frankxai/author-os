@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash, randomBytes } from 'node:crypto';
 import {
   appendAuditArtifacts,
   countWords,
+  compileManuscriptEpub,
   createEmptyProject,
   createExportRecord,
   createId,
@@ -259,6 +261,7 @@ export function importManuscript(source, root = process.cwd()) {
 }
 
 export function exportLocalProject(root = process.cwd(), format = 'markdown') {
+  if (format === 'epub') return exportLocalEpub(root);
   const project = readAuthorProject(root);
   ensureDir(path.join(root, 'output'));
   if (['markdown', 'md'].includes(format)) {
@@ -274,6 +277,85 @@ export function exportLocalProject(root = process.cwd(), format = 'markdown') {
     return { file, format: 'markdown', export: exportRecord };
   }
   throw new Error(`Local adapter only exports markdown directly. Use pandoc-backed CLI export for ${format}.`);
+}
+
+const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+
+function epubSources(root) {
+  const graph = ['.authoros/project.graph.json', 'authoros.graph.json'].find(file => fs.existsSync(path.join(root, file)));
+  const files = graph ? [path.join(root, graph)] : [
+    ...(fs.existsSync(path.join(root, 'authoros.json')) ? [path.join(root, 'authoros.json')] : []),
+    ...(fs.existsSync(path.join(root, 'outline.md')) ? [path.join(root, 'outline.md')] : []),
+    ...findFilesRecursive(path.join(root, 'chapters'), (_file, name) => name.endsWith('.md')).sort(),
+  ];
+  const inputs = files.map(file => {
+    if (fs.statSync(file).size > 32 * 1024 * 1024) throw new Error('EPUB source file exceeds 32 MiB.');
+    const bytes = fs.readFileSync(file);
+    return { path: relative(root, file), sha256: digest(bytes), modifiedAt: fs.statSync(file).mtime.toISOString() };
+  });
+  return { inputs, sha256: digest(JSON.stringify(inputs)) };
+}
+
+// Immutable files avoid overwriting a reader's edits. A failed receipt write can be retried.
+function publishImmutable(file, bytes) {
+  if (fs.existsSync(file)) {
+    if (fs.lstatSync(file).isSymbolicLink() || !fs.readFileSync(file).equals(Buffer.from(bytes))) {
+      throw new Error(`Existing edition differs; preserve and inspect ${path.basename(file)}.`);
+    }
+    return;
+  }
+  const temporary = `${file}.${randomBytes(8).toString('hex')}.tmp`;
+  let descriptor;
+  try {
+    descriptor = fs.openSync(temporary, 'wx', 0o600);
+    fs.writeFileSync(descriptor, bytes);
+    fs.fsyncSync(descriptor);
+    fs.closeSync(descriptor);
+    descriptor = undefined;
+    try { fs.linkSync(temporary, file); }
+    catch (error) {
+      if (error.code !== 'EEXIST' || fs.lstatSync(file).isSymbolicLink() ||
+          !fs.readFileSync(file).equals(Buffer.from(bytes))) throw error;
+    }
+  } finally {
+    if (descriptor !== undefined) fs.closeSync(descriptor);
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+  }
+}
+
+function exportLocalEpub(root) {
+  root = fs.realpathSync(root);
+  const source = epubSources(root);
+  for (const input of source.inputs) {
+    if (input.path.endsWith('.json')) JSON.parse(fs.readFileSync(path.join(root, input.path), 'utf8'));
+  }
+  const project = readAuthorProject(root);
+  if (!source.inputs.some(input => input.path.endsWith('graph.json'))) {
+    const manifest = readJsonSafe(path.join(root, 'authoros.json')) || {};
+    project.project.author = manifest.author;
+    project.project.language = manifest.language;
+  }
+  const modifiedAt = source.inputs.map(input => input.modifiedAt).sort().at(-1);
+  const options = { identifier: `urn:sha256:${source.sha256}`, modifiedAt };
+  const bytes = Buffer.from(compileManuscriptEpub(project, options));
+  if (epubSources(root).sha256 !== source.sha256) throw new Error('Source changed during EPUB export; retry from the new revision.');
+  const checksum = digest(bytes);
+  const output = path.join(root, 'output');
+  if (fs.existsSync(output) && fs.lstatSync(output).isSymbolicLink()) throw new Error('EPUB output directory must not be a link.');
+  ensureDir(output);
+  if (path.dirname(fs.realpathSync(output)) !== root) throw new Error('EPUB output must stay inside the project.');
+  const file = path.join(output, `book-${checksum}.epub`);
+  const receiptFile = `${file}.source.json`;
+  const receipt = {
+    schemaVersion: 1, format: 'epub', renderer: 'author-os-text-epub-v1/markdown-it-15.0.2',
+    sourceSha256: source.sha256, sources: source.inputs, checksum, modifiedAt,
+    identifier: options.identifier, file: relative(root, file), approvalState: 'requested',
+    scope: 'Internal text reading proof; no EPUBCheck, reader, rights or publication approval inferred.',
+  };
+  publishImmutable(file, bytes);
+  publishImmutable(receiptFile, Buffer.from(JSON.stringify(receipt, null, 2) + '\n'));
+  return { file, receiptFile, format: 'epub', checksum, sourceSha256: source.sha256,
+    export: createExportRecord(project, { format: 'epub', status: 'completed', path: relative(root, file), checksum }) };
 }
 
 export function runLocalContinuity(root = process.cwd()) {

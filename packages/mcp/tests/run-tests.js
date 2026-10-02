@@ -136,8 +136,9 @@ try {
 
   // Test export_epub_manifest
   const epubRes = JSON.parse((await callAuthorOsTool('export_epub_manifest', { root })).content[0].text);
-  assert.equal(epubRes.success, true);
-  assert.equal(epubRes.epub.format, 'epub3');
+  assert.equal(epubRes.success, false); // This fixture has scenes but no chapter spine.
+  assert.equal(epubRes.error.code, 'EPUB_EXPORT_REFUSED');
+  assert.match(epubRes.error.message, /chapters/);
 
   // Test describe_sensory_expansion
   const sensoryRes = JSON.parse((await callAuthorOsTool('describe_sensory_expansion', {

@@ -2,7 +2,7 @@ name: Author OS CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, codex/author-os-preview]
     paths:
       - "apps/**"
       - "packages/**"
@@ -56,6 +56,19 @@ jobs:
       - run: npm run runtime:check
 
       - run: npm test
+
+      - run: node packages/core/tests/epub-tests.js
+
+      - run: node packages/local/tests/epub-tests.js
+
+      - name: Validate sample text EPUB with pinned EPUBCheck
+        shell: bash
+        run: |
+          curl --fail --location --max-time 120 https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip -o "$RUNNER_TEMP/epubcheck.zip"
+          printf '33350c61038e71dfb3d45a76aed04bf5481e6d5500cb780f6e98db8bbd15a28c  %s\n' "$RUNNER_TEMP/epubcheck.zip" | sha256sum --check
+          unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP/epubcheck"
+          node --input-type=module -e 'import fs from "node:fs"; import {sampleProject,compileManuscriptEpub} from "./packages/core/src/index.js"; fs.writeFileSync(process.env.RUNNER_TEMP+"/author-os-proof.epub",compileManuscriptEpub(sampleProject));'
+          java -jar "$RUNNER_TEMP/epubcheck/epubcheck-5.4.0/epubcheck.jar" "$RUNNER_TEMP/author-os-proof.epub"
 
       - run: node bin/author.js cloud-env --json --no-env-file
 
