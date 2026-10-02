@@ -293,7 +293,7 @@ function epubSources(root) {
     const bytes = fs.readFileSync(file);
     return { path: relative(root, file), sha256: digest(bytes), modifiedAt: fs.statSync(file).mtime.toISOString() };
   });
-  return { inputs, sha256: digest(JSON.stringify(inputs)) };
+  return { graph, inputs, sha256: digest(JSON.stringify(inputs)) };
 }
 
 // Immutable files avoid overwriting a reader's edits. A failed receipt write can be retried.
@@ -326,11 +326,23 @@ function publishImmutable(file, bytes) {
 function exportLocalEpub(root) {
   root = fs.realpathSync(root);
   const source = epubSources(root);
+  let savedGraph;
   for (const input of source.inputs) {
-    if (input.path.endsWith('.json')) JSON.parse(fs.readFileSync(path.join(root, input.path), 'utf8'));
+    if (!input.path.endsWith('.json')) continue;
+    const value = JSON.parse(fs.readFileSync(path.join(root, input.path), 'utf8'));
+    const isObject = item => item !== null && typeof item === 'object' && !Array.isArray(item);
+    if (input.path === source.graph) {
+      if (!isObject(value) || !isObject(value.project) ||
+          !Array.isArray(value.chapters) || !Array.isArray(value.scenes)) {
+        throw new Error('EPUB saved graph must contain project metadata, chapters and scenes; it cannot fall back to other source files.');
+      }
+      savedGraph = value;
+    } else if (!isObject(value)) {
+      throw new Error('EPUB manifest must be an object.');
+    }
   }
-  const project = readAuthorProject(root);
-  if (!source.inputs.some(input => input.path.endsWith('graph.json'))) {
+  const project = source.graph ? normalizeProject(savedGraph) : readAuthorProject(root);
+  if (!source.graph) {
     const manifest = readJsonSafe(path.join(root, 'authoros.json')) || {};
     project.project.author = manifest.author;
     project.project.language = manifest.language;

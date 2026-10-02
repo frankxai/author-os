@@ -59,6 +59,36 @@ try {
   assert.match(filesBytes, /<dc:language>fr<\/dc:language>/);
   assert.deepEqual(fs.readFileSync(chapterFile), untouched);
   assert.equal(fs.existsSync(path.join(filesRoot, '.authoros')), false);
+  const invalidGraphRoot = path.join(root, 'invalid-graph-project');
+  fs.mkdirSync(path.join(invalidGraphRoot, '.authoros'), { recursive: true });
+  fs.mkdirSync(path.join(invalidGraphRoot, 'chapters'));
+  const invalidGraphFile = path.join(invalidGraphRoot, '.authoros', 'project.graph.json');
+  const fallbackFile = path.join(invalidGraphRoot, 'chapters', '01.md');
+  fs.writeFileSync(fallbackFile, '# Untracked fallback\n\nThis manuscript must not be silently exported.');
+  fs.writeFileSync(path.join(invalidGraphRoot, 'authoros.graph.json'), JSON.stringify(graph));
+  for (const invalid of [null, false, 0, 'not a graph', [], {}, { project: {}, chapters: [], scenes: null }]) {
+    fs.writeFileSync(invalidGraphFile, JSON.stringify(invalid));
+    const sourceBytes = fs.readFileSync(invalidGraphFile);
+    assert.throws(() => exportLocalProject(invalidGraphRoot, 'epub'), /EPUB saved graph/);
+    const denied = JSON.parse((await callAuthorOsTool('export_book', { root: invalidGraphRoot, format: 'epub' })).content[0].text);
+    assert.equal(denied.error.code, 'EPUB_EXPORT_REFUSED');
+    assert.deepEqual(fs.readFileSync(invalidGraphFile), sourceBytes);
+    assert.equal(fs.existsSync(path.join(invalidGraphRoot, 'output')), false);
+  }
+  const invalidCli = spawnSync(process.execPath, [fileURLToPath(new URL('../../../bin/author.js', import.meta.url)), 'export', 'epub'], { cwd: invalidGraphRoot, encoding: 'utf8', timeout: 10000 });
+  assert.notEqual(invalidCli.status, 0);
+  assert.match(invalidCli.stderr, /EPUB saved graph/);
+  assert.equal(fs.existsSync(path.join(invalidGraphRoot, 'output')), false);
+  fs.writeFileSync(invalidGraphFile, JSON.stringify(graph));
+  const validSelected = exportLocalProject(invalidGraphRoot, 'epub');
+  const validReceipt = JSON.parse(fs.readFileSync(validSelected.receiptFile, 'utf8'));
+  assert.deepEqual(validReceipt.sources.map(input => input.path), ['.authoros/project.graph.json']);
+  assert.equal(fs.readFileSync(validSelected.file).includes(Buffer.from('Untracked fallback')), false);
+  const fallbackBytes = fs.readFileSync(fallbackFile);
+  fs.writeFileSync(path.join(filesRoot, 'authoros.json'), 'null');
+  assert.throws(() => exportLocalProject(filesRoot, 'epub'), /EPUB manifest must be an object/);
+  assert.deepEqual(fs.readFileSync(fallbackFile), fallbackBytes);
+  assert.equal(fs.readdirSync(path.join(filesRoot, 'output')).length, 2);
   const linkedRoot = path.join(root, 'linked-project');
   fs.mkdirSync(linkedRoot);
   fs.writeFileSync(path.join(linkedRoot, 'authoros.graph.json'), JSON.stringify(graph));
@@ -70,7 +100,7 @@ try {
   const refused = JSON.parse((await callAuthorOsTool('export_book', { root, format: 'epub' })).content[0].text);
   assert.equal(refused.error.code, 'EPUB_EXPORT_REFUSED');
   assert.equal(fs.readdirSync(path.join(root, 'output')).length, 4);
-  console.log('EPUB local: real CLI, repeat export, source edit, immutable editions, receipt interruption and malformed-source refusal passed.');
+  console.log('EPUB local: real CLI, repeat export, source edit, immutable editions, receipt interruption and malformed/invalid-graph source refusal passed.');
 } finally {
   // Only this test-created tree, never a repository or caller directory.
   assert.equal(path.dirname(root), fs.realpathSync(os.tmpdir()));

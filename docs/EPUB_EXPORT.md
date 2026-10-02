@@ -22,6 +22,10 @@ This text exporter does not bundle fonts, images, covers, audio or scripts.
 the source files, hashes, filesystem timestamps, renderer, output checksum and
 requested approval. Source timestamps supply EPUB's modified metadata. Touching
 a source file therefore changes its snapshot identity even if its text is equal.
+An existing saved graph must be an object with project metadata and chapter/scene
+arrays. Invalid graph values are refused before export, without falling back to
+a legacy graph or Markdown chapters that are absent from its source receipt.
+An existing `authoros.json` must also be an object. Malformed JSON is refused.
 The source graph and Markdown files are never written by this EPUB command.
 The Markdown command keeps its existing audit behavior; `publish epub` retains
 the separately documented Pandoc path.
