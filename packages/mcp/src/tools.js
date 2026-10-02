@@ -133,11 +133,15 @@ export async function callAuthorOsTool(name, input = {}, options = {}) {
     case 'export_book': {
       const format = input.format || 'markdown';
       if (['markdown', 'md'].includes(format)) return textResult(exportLocalProject(root, format));
+      if (format === 'epub') {
+        try { return textResult(exportLocalProject(root, format)); }
+        catch (error) { return textResult({ success: false, error: { code: 'EPUB_EXPORT_REFUSED', message: error.message } }); }
+      }
       return textResult({
         success: false,
         error: {
           code: 'UNSUPPORTED_LOCAL_FORMAT',
-          message: 'Local MCP export currently supports markdown. Use hosted export workers or CLI pandoc flow for DOCX/EPUB/PDF.',
+          message: 'Local MCP export supports Markdown and text EPUB. Use hosted export workers or CLI pandoc flow for DOCX/PDF.',
         },
       });
     }
@@ -232,11 +236,8 @@ export async function callAuthorOsTool(name, input = {}, options = {}) {
     }
     case 'export_epub_manifest': {
       const project = readAuthorProject(root);
-      const epub = buildEpubPackageStructure(project);
-      return textResult({
-        success: true,
-        epub,
-      });
+      try { return textResult({ success: true, epub: buildEpubPackageStructure(project) }); }
+      catch (error) { return textResult({ success: false, error: { code: 'EPUB_EXPORT_REFUSED', message: error.message } }); }
     }
     case 'describe_sensory_expansion': {
       const result = generateSensoryExpansion({

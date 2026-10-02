@@ -1241,9 +1241,9 @@ function cmdExport(format = 'markdown') {
   const normalized = format === 'md' ? 'markdown' : format;
   log(`\n${bold(BRAND)} — Exporting ${normalized}\n`);
 
-  if (normalized === 'markdown') {
+  if (['markdown', 'epub'].includes(normalized)) {
     try {
-      const result = exportLocalProject(process.cwd(), 'markdown');
+      const result = exportLocalProject(process.cwd(), normalized);
       ok(`  Output: ${path.relative(process.cwd(), result.file)}`);
       log('');
       return;
@@ -2343,7 +2343,7 @@ ${bold(BRAND)} v${VERSION} — AI-native author operating system
     search "query"      Search across all project files
     continuity          Run local continuity audit
     quality <file.md>   Check prose quality (AI tics, passive voice)
-    export [markdown]   Export local manuscript markdown
+    export [markdown|epub] Export manuscript Markdown or text EPUB
     publish [epub|pdf]  Convert chapters to publishable format
     readiness           Check export/publishing trust gates
     cloud-readiness     Check hosted/Vercel launch gates
