@@ -178,7 +178,6 @@ frankxai Ecosystem
 │   └── arcanea-author         ← Mythology-enhanced extension
 │
 ├── INTELLIGENCE
-│   ├── opencode-arcanea       ← Multi-model runtime (11 Greek god agents)
 │   ├── claude-arcanea         ← Claude Code integration layer
 │   └── Starlight Intelligence ← 5-layer cognitive architecture
 │
@@ -188,14 +187,11 @@ frankxai Ecosystem
 │   └── Arcanea monorepo       ← 27 repos, 35 npm packages
 │
 ├── TOOLS
-│   ├── arcanea-mcp            ← MCP server (worldbuilding, canon)
-│   ├── arcanea-memory         ← Memory MCP (vault, horizon)
 │   ├── memsearch-sqlite       ← Vector search (included in this repo)
 │   └── arcanea-infogenius     ← Visual intelligence
 │
 ├── CONTENT
 │   ├── Library of Arcanea     ← 200K+ words, 17 collections
-│   ├── arcanea-lore           ← Canon, Guardians, Godbeasts
 │   └── book/                  ← Published creative works
 │
 └── AUTOMATION
@@ -244,8 +240,8 @@ AuthorOS is designed as a starting point. Here's the progression path for author
 | **1. Write** | Install AuthorOS skills | Structured revision, anti-slop, multi-pass editing | `skills/`, any coding agent |
 | **2. Remember** | Add semantic memory | Never lose track of your canon across 200K+ words | `memsearch-sqlite.py`, Gemini embeddings |
 | **3. Mythologize** | Add Arcanean extension | Elemental writing modes, Gate progression, Guardian agents | [arcanea-author](https://github.com/frankxai/arcanea-author) |
-| **4. Orchestrate** | Build your own agent team | Personalized AI collaborators tuned to your voice and genre | [opencode-arcanea](https://github.com/frankxai/opencode-arcanea), [claude-arcanea](https://github.com/frankxai/claude-arcanea) |
-| **5. Build Worlds** | Create your own universe | Full world framework — lore, characters, magic systems, game dev | [arcanea.ai](https://arcanea.ai), [arcanea-mcp](https://github.com/frankxai/arcanea-mcp) |
+| **4. Orchestrate** | Build your own agent team | Personalized AI collaborators tuned to your voice and genre | [claude-arcanea](https://github.com/frankxai/claude-arcanea) |
+| **5. Build Worlds** | Create your own universe | Full world framework — lore, characters, magic systems, game dev | [arcanea.ai](https://arcanea.ai) |
 | **6. Teach** | Share what you learned | Courses, academies, communities, the creator economy | [arcanea.ai/academy](https://arcanea.ai/academy) |
 
 You can stop at any level. Each level is complete on its own. But if you keep going, everything compounds — your memory systems feed your world-building, your world-building feeds your courses, your courses feed your community.
@@ -271,13 +267,8 @@ Using AuthorOS teaches skills that transfer far beyond writing:
 |-----------|-------------|------|
 | **author-os-skills** | Skill marketplace — community-contributed skills for all agents | [frankxai/author-os-skills](https://github.com/frankxai/author-os-skills) |
 | **arcanea-author** | Mythology-enhanced AuthorOS with Ten Gates, Five Elements, Guardian agents | [frankxai/arcanea-author](https://github.com/frankxai/arcanea-author) |
-| **opencode-arcanea** | Multi-model runtime with 11 Greek god agents for creative intelligence | [frankxai/opencode-arcanea](https://github.com/frankxai/opencode-arcanea) |
 | **claude-arcanea** | Claude Code overlays, hooks, and session management for Arcanea workflows | [frankxai/claude-arcanea](https://github.com/frankxai/claude-arcanea) |
-| **arcanea-mcp** | MCP server for worldbuilding, canon validation, and creative intelligence | [frankxai/arcanea-mcp](https://github.com/frankxai/arcanea-mcp) |
-| **arcanea-memory** | Memory MCP server — vault storage, horizon append, semantic recall | [frankxai/arcanea-memory](https://github.com/frankxai/arcanea-memory) |
 | **arcanea-infogenius** | Visual intelligence — infographic generation, research, visual storytelling | [frankxai/arcanea-infogenius](https://github.com/frankxai/arcanea-infogenius) |
-| **arcanea-lore** | Canonical lore — Guardians, Godbeasts, Gates, Elements, the Arcanean universe | [frankxai/arcanea-lore](https://github.com/frankxai/arcanea-lore) |
-| **arcanea-skills-opensource** | 54 open-source skills for Claude Code and other coding agents | [frankxai/arcanea-skills-opensource](https://github.com/frankxai/arcanea-skills-opensource) |
 
 ---
 
