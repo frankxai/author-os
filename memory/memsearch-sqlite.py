@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """memsearch-sqlite: Lightweight vector search over markdown files using SQLite + Gemini embeddings.
-WSL2-compatible alternative to Milvus Lite. Run via: uvx --with google-genai --with numpy --with sqlite-vec python3 scripts/memsearch-sqlite.py
+WSL2-compatible alternative to Milvus Lite. Run via: uvx --with google-genai --with numpy python3 memory/memsearch-sqlite.py
 """
 import sys, os, re, json, hashlib, struct, sqlite3, pathlib, time
 from typing import Optional
@@ -180,7 +180,7 @@ Env: GEMINI_API_KEY (required for index/search)
      MEMSEARCH_DB_DIR (default: ~/.memsearch)
 
 Run via uvx:
-  uvx --with google-genai --with numpy python3 scripts/memsearch-sqlite.py search "query"
+  uvx --with google-genai --with numpy python3 memory/memsearch-sqlite.py search "query"
 """
 
 if __name__ == "__main__":
