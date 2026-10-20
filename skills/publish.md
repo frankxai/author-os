@@ -240,7 +240,7 @@ cover-image: "cover.jpg"
 - **Each format needs its own ISBN**: paperback, hardcover, ebook, audiobook = 4 ISBNs
 - **Where to get**: Bowker (US), Nielsen (UK), your national ISBN agency
 - **KDP exception**: Amazon provides a free ASIN; ISBN optional but limits distribution to Amazon only
-- **Buy in bulk**: Single ISBN ~$125, block of 10 ~$295, block of 100 ~$575 (US prices)
+- **Buy in bulk**: Single ISBN ~USD 125, block of 10 ~USD 295, block of 100 ~USD 575 (US prices)
 - **Never reuse**: A new edition (not just a reprint) requires a new ISBN
 - **Self-published**: Register yourself as publisher with Bowker for professional appearance
 
