@@ -68,13 +68,13 @@ Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in your environment for embeddings.
 │                                                              │
 │  Skills (portable markdown — works with any coding agent)    │
 │  ├── story-architect    — Structure, arc, beats              │
-│  ├── character-psych    — Diamond, voice, motivation         │
+│  ├── character-psychologist — Diamond, voice, motivation     │
 │  ├── line-editor        — Prose polish, anti-slop            │
-│  ├── continuity         — Cross-book consistency             │
-│  ├── memory-search      — Semantic vector search             │
-│  ├── codex-link         — Auto-surface canon references      │
-│  ├── describe           — Five sensory expansions            │
-│  ├── draft-zero         — Full outline from concept          │
+│  ├── continuity (planned) — Cross-book consistency           │
+│  ├── memory-search (planned) — Semantic vector search        │
+│  ├── codex-link (planned) — Auto-surface canon references    │
+│  ├── describe (planned) — Five sensory expansions            │
+│  ├── draft-zero (planned) — Full outline from concept        │
 │  └── publish            — epub / pdf / kindle / web          │
 │                                                              │
 │  Agents (multi-model orchestration)                          │
