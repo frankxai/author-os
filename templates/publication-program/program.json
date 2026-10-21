@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "sample-program",
+  "title": "Sample publication program",
+  "budget": {
+    "usd_cap": 1,
+    "tokens_cap": 10000,
+    "verification_reserve": 0.25
+  },
+  "books": [
+    {
+      "id": "sample-book",
+      "title": "A useful question",
+      "author": "Example author",
+      "language": "en",
+      "chapters": [
+        {
+          "id": "opening",
+          "title": "A useful question",
+          "path": "chapters/opening.md",
+          "origin": "ai",
+          "sha256": "d139819a5734531b9fd9fbf49747e9894a3a6bab187a1624de4909191b331165",
+          "sources": [],
+          "claims": [
+            {
+              "id": "editorial-argument",
+              "status": "interpretation",
+              "source_ids": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "develop",
+      "book_id": "sample-book",
+      "role": "edit",
+      "state": "queued",
+      "depends_on": [],
+      "estimate_tokens": 6000,
+      "estimate_usd": 0.6
+    },
+    {
+      "id": "review",
+      "book_id": "sample-book",
+      "role": "verify",
+      "state": "queued",
+      "depends_on": [
+        "develop"
+      ],
+      "estimate_tokens": 2500,
+      "estimate_usd": 0.25
+    }
+  ]
+}
