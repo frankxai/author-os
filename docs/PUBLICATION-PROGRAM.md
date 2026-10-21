@@ -26,6 +26,8 @@ Schema version is `1`. A program has `id`, `title`, `budget`, `books` and `tasks
 
 Tasks lock `book:BOOK_ID` by default, so two independent jobs cannot edit one manuscript concurrently. An optional nonempty `resources` array can name finer-grained exclusive scopes such as `chapter:opening` or `evidence:case-one`. Ready listings are candidates, not simultaneous grants; each claim rechecks resources and reservations under the manifest lock. Do not assign different resource labels to jobs that actually share a writable file.
 
+Each claim binds a SHA-256 of its book/source/claim metadata, dependency receipts and writable resource definitions. Completion is refused after any of those inputs change. Readiness also checks that completed dependencies and their ancestors still match their bound input snapshots; source drift cannot silently advance the next team. A coordinating run uses immutable inputs: return new work in separate artifacts, then let the integrating editor prepare a new program revision with fresh tasks after accepting source changes. Do not edit an active book manifest in place. Tasks default to at most three attempts; optional `max_attempts` may reduce this to one or two. Expiry after the final attempt ends in `failed`. Imported running reservations are validated against both the total budget and verification reserve.
+
 Do not place private manuscripts or real personal source material in this public engine repository. Keep each program beside its source in the author's private project.
 
 ## Claims and receipts
