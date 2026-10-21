@@ -10,7 +10,9 @@ const STATES = new Set(['queued', 'running', 'done', 'failed']);
 const ORIGINS = new Set(['human', 'ai', 'human_ai']);
 const HASH = /^[a-f0-9]{64}$/;
 const ID = /^[a-z0-9][a-z0-9-]{0,79}$/;
+const validId = value => typeof value==='string' && ID.test(value);
 const resources = task => task.resources ?? [`book:${task.book_id}`];
+const attemptLimit = task => task.max_attempts ?? 3;
 const fail = message => { throw new Error(message); };
 const ensure = (test, message) => { if (!test) fail(message); };
 const text = (value, name) => ensure(typeof value === 'string' && value.trim().length > 0, `${name} must be nonempty text`);
@@ -38,7 +40,7 @@ function contained(root, relative, mustExist = true) {
 export function validateProgram(program) {
   ensure(program && typeof program === 'object' && !Array.isArray(program), 'program must be an object');
   ensure(program.schema_version === 1, 'schema_version must be 1');
-  ensure(ID.test(program.id), 'invalid program id');
+  ensure(validId(program.id), 'invalid program id');
   text(program.title, 'program title');
   ensure(program.budget && typeof program.budget === 'object', 'budget is required');
   for (const field of ['usd_cap', 'tokens_cap', 'verification_reserve']) number(program.budget[field], `budget.${field}`);
@@ -48,12 +50,12 @@ export function validateProgram(program) {
   ensure(Array.isArray(program.tasks), 'tasks must be an array');
   const ids = new Set();
   for (const book of program.books) {
-    ensure(ID.test(book.id) && !ids.has(book.id), 'book ids must be unique'); ids.add(book.id);
+    ensure(validId(book.id) && !ids.has(book.id), 'book ids must be unique'); ids.add(book.id);
     for (const field of ['title', 'author', 'language']) text(book[field], `book.${field}`);
     ensure(Array.isArray(book.chapters) && book.chapters.length > 0, 'chapters must be nonempty');
     const chapterIds = new Set();
     for (const chapter of book.chapters) {
-      ensure(ID.test(chapter.id) && !chapterIds.has(chapter.id), 'chapter ids must be unique'); chapterIds.add(chapter.id);
+      ensure(validId(chapter.id) && !chapterIds.has(chapter.id), 'chapter ids must be unique'); chapterIds.add(chapter.id);
       text(chapter.title, 'chapter title'); text(chapter.path, 'chapter path');
       ensure(ORIGINS.has(chapter.origin), 'chapter origin must be human, ai or human_ai');
       ensure(HASH.test(chapter.sha256), 'chapter sha256 is required');
@@ -78,15 +80,18 @@ export function validateProgram(program) {
   }
   const taskIds = new Set();
   for (const task of program.tasks) {
-    ensure(ID.test(task.id) && !taskIds.has(task.id), 'task ids must be unique'); taskIds.add(task.id);
+    ensure(validId(task.id) && !taskIds.has(task.id), 'task ids must be unique'); taskIds.add(task.id);
     ensure(ids.has(task.book_id), 'task references unknown book');
     ensure(ROLES.has(task.role), 'task role is invalid');
     ensure(STATES.has(task.state), 'task state is invalid');
+    ensure(Number.isInteger(attemptLimit(task))&&attemptLimit(task)>=1&&attemptLimit(task)<=3,'max_attempts must be 1–3');
+    ensure(Number.isInteger(task.attempts??0)&&(task.attempts??0)>=0&&(task.attempts??0)<=attemptLimit(task),'invalid attempt count');
     ensure(Array.isArray(task.depends_on), 'depends_on must be an array');
     ensure(Array.isArray(resources(task)) && resources(task).length>0 && resources(task).every(r=>typeof r==='string'&&/^[a-z0-9][a-z0-9:._/-]{0,159}$/.test(r)), 'task resources must name at least one bounded resource');
     for (const field of ['estimate_tokens', 'estimate_usd']) number(task[field], `task.${field}`);
     ensure(Number.isSafeInteger(task.estimate_tokens), 'estimate_tokens must be an integer');
     if (task.state === 'running') {
+      ensure(task.attempts>=1&&HASH.test(task.input_scope_sha256??''),'running task requires attempt and bound input scope');
       text(task.worker, 'running worker'); text(task.lease_token, 'lease token');
       ensure(Number.isFinite(Date.parse(task.lease_until)), 'running task requires valid lease_until');
     }
@@ -110,8 +115,9 @@ export function validateProgram(program) {
   }
   for (const id of taskIds) visit(id);
   const used = usage(program);
-  ensure(used.tokens <= program.budget.tokens_cap && used.usd <= program.budget.usd_cap + 1e-8, 'recorded usage exceeds program budget');
-  ensure(used.production_tokens <= Math.floor(program.budget.tokens_cap*(1-program.budget.verification_reserve)), 'recorded production usage consumes verification reserve');
+  const reserved=program.tasks.filter(t=>t.state==='running').reduce((sum,t)=>({tokens:sum.tokens+t.estimate_tokens,usd:sum.usd+t.estimate_usd,production_tokens:sum.production_tokens+(t.role==='verify'?0:t.estimate_tokens)}),{tokens:0,usd:0,production_tokens:0});
+  ensure(used.tokens+reserved.tokens <= program.budget.tokens_cap && used.usd+reserved.usd <= program.budget.usd_cap + 1e-8, 'recorded usage/reservations exceed program budget');
+  ensure(used.production_tokens+reserved.production_tokens <= Math.floor(program.budget.tokens_cap*(1-program.budget.verification_reserve)), 'recorded production usage/reservations consume verification reserve');
   return program;
 }
 
@@ -123,6 +129,10 @@ export function approvalScope(book,chapter) {
   return sha256(JSON.stringify({book:{id:book.id,title:book.title,author:book.author,language:book.language},chapter:{id:chapter.id,title:chapter.title,origin:chapter.origin,sha256:chapter.sha256,sources:chapter.sources,claims:chapter.claims}}));
 }
 
+export function taskScope(program,task) {
+  return sha256(JSON.stringify({book:program.books.find(b=>b.id===task.book_id),task:{id:task.id,book_id:task.book_id,role:task.role,depends_on:task.depends_on,resources:resources(task),estimate_tokens:task.estimate_tokens,estimate_usd:task.estimate_usd,max_attempts:attemptLimit(task)},dependencies:task.depends_on.map(id=>{const dep=program.tasks.find(t=>t.id===id);return {id:dep.id,artifact:dep.artifact??null,receipt:dep.receipt??null,state:dep.state};})}));
+}
+
 function fits(program, task, additional = {tokens:task.estimate_tokens,usd:task.estimate_usd}) {
   const used = usage(program);
   const reserved = program.tasks.filter(t => t.state==='running' && t.id!==task.id).reduce((s,t) => ({tokens:s.tokens+t.estimate_tokens,usd:s.usd+t.estimate_usd,production_tokens:s.production_tokens+(t.role==='verify'?0:t.estimate_tokens)}),{tokens:0,usd:0,production_tokens:0});
@@ -132,14 +142,21 @@ function fits(program, task, additional = {tokens:task.estimate_tokens,usd:task.
 
 export function readyTasks(program) {
   validateProgram(program);
-  return program.tasks.filter(t => t.state==='queued' && t.depends_on.every(id=>program.tasks.find(d=>d.id===id).state==='done') && !program.tasks.some(active=>active.state==='running'&&resources(active).some(r=>resources(t).includes(r))) && fits(program,t)).map(t=>({id:t.id,book_id:t.book_id,role:t.role,resources:resources(t),estimate_tokens:t.estimate_tokens,estimate_usd:t.estimate_usd}));
+  const current=new Map();
+  function dependencyCurrent(id) {
+    if(current.has(id))return current.get(id);
+    const dependency=program.tasks.find(d=>d.id===id);
+    const valid=dependency.state==='done'&&dependency.input_scope_sha256===taskScope(program,dependency)&&dependency.depends_on.every(dependencyCurrent);
+    current.set(id,valid);return valid;
+  }
+  return program.tasks.filter(t => t.state==='queued' && (t.attempts??0)<attemptLimit(t) && t.depends_on.every(dependencyCurrent) && !program.tasks.some(active=>active.state==='running'&&resources(active).some(r=>resources(t).includes(r))) && fits(program,t)).map(t=>({id:t.id,book_id:t.book_id,role:t.role,resources:resources(t),estimate_tokens:t.estimate_tokens,estimate_usd:t.estimate_usd}));
 }
 
 export function transition(input, action, now = new Date()) {
   validateProgram(input); const program=clone(input); const iso=now.toISOString();
   if (action.type==='recover') {
     for (const task of program.tasks) if(task.state==='running' && Date.parse(task.lease_until)<=now.getTime()) {
-      task.state='queued'; task.last_failure='lease expired; external usage must be reconciled before retry';
+      task.state=task.attempts>=attemptLimit(task)?'failed':'queued'; task.last_failure='lease expired; external usage must be reconciled before retry';
       // A timeout does not prove the provider spent nothing. Keep its reservation as a receipt.
       task.receipt={tokens:(task.receipt?.tokens??0)+task.estimate_tokens,usd:(task.receipt?.usd??0)+task.estimate_usd,kind:'expired_lease_reservation'};
       task.past_lease_tokens=[...(task.past_lease_tokens??[]),task.lease_token];
@@ -153,6 +170,7 @@ export function transition(input, action, now = new Date()) {
     if(task.state==='running' && task.worker===action.worker && task.lease_token===action.lease_token) return program;
     ensure(readyTasks(program).some(t=>t.id===task.id),'task not ready or exceeds budget');
     ensure(!action.lease_token||!(task.past_lease_tokens??[]).includes(action.lease_token),'lease token cannot be reused after an attempt');
+    task.input_scope_sha256=taskScope(program,task);task.attempts=(task.attempts??0)+1;
     task.state='running'; task.worker=action.worker; task.lease_token=action.lease_token??crypto.randomUUID();
     task.lease_until=new Date(now.getTime()+action.lease_seconds*1000).toISOString(); task.started_at=iso;
   } else if(action.type==='complete'||action.type==='fail') {
@@ -163,6 +181,7 @@ export function transition(input, action, now = new Date()) {
     }
     ensure(task.state==='running' && task.worker===action.worker && task.lease_token===action.lease_token,'worker/lease does not own task');
     ensure(Date.parse(task.lease_until)>now.getTime(),'lease expired');
+    ensure(task.input_scope_sha256===taskScope(program,task),'task inputs changed after claim; return through recovery and re-review');
     ensure(action.tokens<=task.estimate_tokens && action.usd<=task.estimate_usd+1e-8,'actual usage exceeds task reservation; reconcile explicitly instead of silently expanding budget');
     ensure(fits(program,task,{tokens:action.tokens,usd:action.usd}),'actual usage exceeds budget');
     if(action.type==='complete') text(action.artifact,'artifact');
