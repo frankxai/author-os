@@ -7,6 +7,8 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { main as publicationProgram } from './publication-program.js';
+import { literalSearch, semanticSearch } from './search.js';
 
 const VERSION = '0.1.2';
 const BRAND = 'AuthorOS';
@@ -130,55 +132,17 @@ function cmdStatus() {
 }
 
 function cmdSearch(query) {
-  if (!query) { err('Usage: author-os search "query"'); process.exit(1); }
-  log(`\n${bold(BRAND)} — Searching: "${query}"\n`);
-
-  // Check if memsearch is available
-  const memsearchPath = path.join(getPackageDir(), 'memory', 'memsearch-sqlite.py');
-  const hasMemsearch = fs.existsSync(memsearchPath) || commandExists('memsearch-sqlite.py');
-  const hasPython = commandExists('python3') || commandExists('python');
-
-  if (!hasPython) {
-    warn('  Python 3 is not installed. Semantic search requires Python 3.');
-    warn('  Install: https://www.python.org/downloads/');
-    dim('  Falling back to grep...\n');
-  } else if (!hasMemsearch) {
-    dim('  memsearch-sqlite.py not found. For semantic search:');
-    dim('    pip install sentence-transformers sqlite-utils');
-    dim('    See: https://github.com/frankxai/author-os#semantic-search\n');
-    dim('  Falling back to grep...\n');
-  }
-
-  if (hasPython && hasMemsearch) {
-    try {
-      const pythonCmd = commandExists('python3') ? 'python3' : 'python';
-      const result = execSync(
-        `${pythonCmd} "${memsearchPath}" --query "${query.replace(/"/g, '\\"')}"`,
-        { encoding: 'utf-8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'] }
-      );
-      log(result);
-      return;
-    } catch (e) {
-      dim('  memsearch failed, falling back to grep...\n');
-    }
-  }
-
-  // Grep fallback
+  if (!query) { err('Usage: author-os search "query" [--semantic]'); process.exitCode = 1; return; }
   try {
-    const dirs = ['chapters', 'characters', 'worldbuilding', 'notes']
-      .filter(d => fs.existsSync(d));
-    if (dirs.length === 0) {
-      err('  No project directories found. Run `author-os init` first.');
-      process.exit(1);
+    if (args.includes('--semantic')) {
+      const script = path.join(getPackageDir(), 'memory', 'memsearch-sqlite.py');
+      log(semanticSearch(query, { script }));
+    } else {
+      const results = literalSearch(query);
+      for (const result of results) log(`${result.path}:${result.line}: ${result.text}`);
+      if (results.length === 0) log('No literal matches found.');
     }
-    const grepResult = execSync(
-      `grep -rn --include="*.md" -i "${query.replace(/"/g, '\\"')}" ${dirs.join(' ')} 2>/dev/null || echo "  No matches found."`,
-      { encoding: 'utf-8', timeout: 10000 }
-    );
-    log(grepResult);
-  } catch (e) {
-    err(`  Search failed: ${e.message}`);
-  }
+  } catch (error) { err(`Search failed: ${error.message}`); process.exitCode = 1; }
 }
 
 function cmdQuality(file) {
@@ -373,10 +337,11 @@ ${bold(BRAND)} v${VERSION} — AI-native author operating system
     init                Create project structure
     setup               Detect coding agents and install skills
     status              Word counts, chapter overview
-    search "query"      Search across all project files
+    search "query"      Literal local search; --semantic explicitly uses embeddings
     quality <file.md>   Check prose quality (AI tics, passive voice)
     publish [epub|pdf]  Convert chapters to publishable format
     agents              Show agent registry
+    program <action>    Coordinate private book tasks and compile scoped HTML proofs
 
   Flags:
     -v, --version       Show version
@@ -395,6 +360,10 @@ ${bold(BRAND)} v${VERSION} — AI-native author operating system
 // ── Dispatch ─────────────────────────────────────────────────────────
 
 switch (command) {
+  case 'program':
+    try { log(JSON.stringify(publicationProgram(args.slice(1)), null, 2)); }
+    catch (error) { err(error.message); process.exitCode = 1; }
+    break;
   case 'init':    cmdInit(); break;
   case 'setup':   cmdSetup(); break;
   case 'status':  cmdStatus(); break;
@@ -406,3 +375,4 @@ switch (command) {
   case '-h': case '--help': case undefined: cmdHelp(); break;
   default: err(`Unknown command: ${command}`); cmdHelp(); process.exit(1);
 }
+
