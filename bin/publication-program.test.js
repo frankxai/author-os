@@ -71,6 +71,49 @@ test('invalid graph, duplicate IDs, unknown claims and budget values fail closed
  }
  }finally{f.cleanup();}
 });
+test('missing IDs never coerce to the literal string undefined',()=>{
+ const f=fixture();try {
+ for(const mutate of [p=>{delete p.id;},p=>{delete p.books[0].id;p.tasks.forEach(t=>delete t.book_id);},p=>{delete p.books[0].chapters[0].id;},p=>{delete p.tasks[0].id;p.tasks[1].depends_on=[];}]) {
+ const copy=structuredClone(f.program);mutate(copy);assert.throws(()=>validateProgram(copy));
+ }
+ }finally{f.cleanup();}
+});
+test('imported running reservations cannot exceed caps or verification reserve',()=>{
+ const f=fixture();try {
+ for(const mutate of [p=>{p.tasks[0].estimate_tokens=1000000;},p=>{p.tasks[0].estimate_tokens=800;},p=>{p.tasks[0].estimate_usd=11;}]) {
+ const copy=claim(f.program);mutate(copy);assert.throws(()=>validateProgram(copy),/budget|reserve/);
+ }
+ }finally{f.cleanup();}
+});
+test('three expired attempts stop the task and lease tokens never reactivate',()=>{
+ const f=fixture();try {
+ f.program.tasks[0].estimate_tokens=1;f.program.tasks[0].estimate_usd=0;
+ let p=f.program;
+ for(let index=0;index<3;index++) {
+ const clock=new Date(now.getTime()+index*120000);
+ p=transition(p,{type:'claim',task_id:'research',worker:'w',lease_token:'attempt-'+index,lease_seconds:30},clock);
+ p=transition(p,{type:'recover'},new Date(clock.getTime()+31000));
+ if(index===0) assert.throws(()=>transition(p,{type:'claim',task_id:'research',worker:'w',lease_token:'attempt-0',lease_seconds:30},new Date(clock.getTime()+32000)),/cannot be reused/);
+ }
+ assert.equal(p.tasks[0].attempts,3);assert.equal(p.tasks[0].state,'failed');
+ assert.throws(()=>claim(p),/not ready/);
+ }finally{f.cleanup();}
+});
+test('completion refuses a changed book, sources, dependencies or writable resource',()=>{
+ const f=fixture();try {
+ for(const mutate of [p=>{p.books[0].title='Different promise';},p=>{p.books[0].chapters[0].sha256='a'.repeat(64);},p=>{p.books[0].chapters[0].claims[0].status='fiction';},p=>{p.tasks[0].resources=['other:resource'];}]) {
+ const p=claim(f.program);mutate(p);assert.throws(()=>done(p),/inputs changed/);
+ }
+ }finally{f.cleanup();}
+});
+test('stale accepted dependency cannot advance the next team after source drift',()=>{
+ const f=fixture();try {
+ const p=done(claim(f.program));assert.deepEqual(readyTasks(p).map(t=>t.id),['edit']);
+ p.books[0].chapters[0].sha256='b'.repeat(64);
+ assert.deepEqual(readyTasks(p),[]);
+ assert.throws(()=>claim(p,'edit','editor','lease-editor'),/not ready/);
+ }finally{f.cleanup();}
+});
 test('proof is deterministic, ordered, escaped and contains no internal paths',()=>{
  const f=fixture();try {
  const second={...f.chapter,id:'second',title:'Second'};f.program.books[0].chapters.push(second);
