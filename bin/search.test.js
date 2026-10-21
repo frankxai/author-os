@@ -34,3 +34,15 @@ test('semantic adapter uses search subcommand, isolated index and argv without s
  assert.equal(captured[2].env.MEMSEARCH_DB_DIR,path.join(f.dir,'memory','.index'));
  }finally{f.cleanup();}
 });
+test('intermediate directory symlinks cannot expose another manuscript',()=>{
+ const f=fixture(),other=fs.mkdtempSync(path.join(os.tmpdir(),'search-private-'));try {
+ fs.mkdirSync(path.join(other,'chapters'));fs.writeFileSync(path.join(other,'chapters','private.md'),'PRIVATE needle');
+ fs.symlinkSync(other,path.join(f.dir,'bridge'));
+ assert.throws(()=>literalSearch('needle',{cwd:f.dir,directories:['bridge/chapters']}),/outside the manuscript/);
+ fs.mkdirSync(path.join(f.dir,'memory'));fs.mkdirSync(path.join(other,'index'));fs.writeFileSync(path.join(other,'index','vectors.db'),'');
+ fs.symlinkSync(path.join(other,'index'),path.join(f.dir,'memory','.index'));
+ const script=path.join(f.dir,'stub.py');fs.writeFileSync(script,'#stub');let invoked=false;
+ assert.throws(()=>semanticSearch('needle',{script,cwd:f.dir,execute:()=>{invoked=true;}}),/inside the manuscript/);
+ assert.equal(invoked,false);
+ }finally{f.cleanup();fs.rmSync(other,{recursive:true,force:true});}
+});
