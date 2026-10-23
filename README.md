@@ -55,7 +55,7 @@ python3 memory/memsearch-sqlite.py search "What did the protagonist discover in 
 python3 memory/memsearch-sqlite.py status
 ```
 
-Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in your environment for embeddings.
+Set `MEMSEARCH_DB_DIR`, and `GEMINI_API_KEY` or `GOOGLE_API_KEY` in your environment for embeddings.
 
 ---
 
