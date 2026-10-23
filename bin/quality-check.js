@@ -128,7 +128,7 @@ The queen walked to the gate and spoke clearly.
 // ── Main ─────────────────────────────────────────────────────────────
 
 import { fileURLToPath } from "node:url";
-const isMain = import.meta.url.startsWith("file:") && fileURLToPath(import.meta.url) === process.argv[1];
+const isMain = process.argv[1] && fs.existsSync(process.argv[1]) && fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1]);
 const filePath = process.argv[2];
 
 if (!isMain) { /* let it be imported */ }
