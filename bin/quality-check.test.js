@@ -10,7 +10,7 @@ test('analyze should count words, sentences, and paragraphs', () => {
   assert.equal(result.avgSentenceLength, Number((8 / 3).toFixed(1)));
 });
 
-test('analyze should ignore markdown headers and code blocks', () => {
+test('analyze should ignore markdown header and code block marker lines, but includes fenced content', () => {
   const result = analyze('# Header\n```\ncode\n```\nNormal text.');
   assert.equal(result.wordCount, 3);
   assert.equal(result.sentenceCount, 1);
