@@ -70,11 +70,19 @@ Only this sentence is counted.
   assert.equal(result.wordCount, 11);
 });
 
-test('cli: correctly runs through a symlink (regression)', () => {
+test('cli: correctly runs through a symlink (regression)', (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'quality-check-symlink-'));
   const symlinkPath = path.join(dir, 'qc-link');
   try {
     fs.symlinkSync(path.resolve('bin/quality-check.js'), symlinkPath);
+  } catch (err) {
+    if (err.code === 'EPERM' || err.code === 'ENOTSUP') {
+      t.skip('Symlink creation requires privileges or Developer Mode on this platform.');
+      return;
+    }
+    throw err;
+  }
+  try {
     const output = execFileSync(process.execPath, [symlinkPath, '--self-test'], { encoding: 'utf8' });
     assert.ok(output.includes('Self-test passed.'));
   } finally {

@@ -128,7 +128,7 @@ The queen walked to the gate and spoke clearly.
 
 // ── Main ─────────────────────────────────────────────────────────────
 
-if (process.argv[1] && fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))) {
   const filePath = process.argv[2];
 
   if (filePath === '--self-test') {
