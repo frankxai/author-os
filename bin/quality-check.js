@@ -5,7 +5,6 @@
 // Exit code 0 = pass, 1 = fail (>5 tics or >25% passive)
 
 import fs from 'node:fs';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const BANNED_TICS = [
@@ -129,7 +128,7 @@ The queen walked to the gate and spoke clearly.
 
 // ── Main ─────────────────────────────────────────────────────────────
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const filePath = process.argv[2];
 
   if (filePath === '--self-test') {

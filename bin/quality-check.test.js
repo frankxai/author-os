@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { analyze } from './quality-check.js';
 
 test('analyze: correctly calculates word, sentence, and paragraph counts', () => {
@@ -64,4 +68,16 @@ Only this sentence is counted.
   // It does NOT remove the contents of the code block.
   assert.equal(result.sentenceCount, 1);
   assert.equal(result.wordCount, 11);
+});
+
+test('cli: correctly runs through a symlink (regression)', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'quality-check-symlink-'));
+  const symlinkPath = path.join(dir, 'qc-link');
+  try {
+    fs.symlinkSync(path.resolve('bin/quality-check.js'), symlinkPath);
+    const output = execFileSync(process.execPath, [symlinkPath, '--self-test'], { encoding: 'utf8' });
+    assert.ok(output.includes('Self-test passed.'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
