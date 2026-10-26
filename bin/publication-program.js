@@ -121,7 +121,7 @@ export function validateProgram(program) {
   return program;
 }
 
-export function usage(program) {
+function usage(program) {
   return program.tasks.reduce((sum,t) => ({tokens:sum.tokens+(t.receipt?.tokens??0), usd:sum.usd+(t.receipt?.usd??0), production_tokens:sum.production_tokens+(t.role==='verify'?0:(t.receipt?.tokens??0))}), {tokens:0,usd:0,production_tokens:0});
 }
 
@@ -129,7 +129,7 @@ export function approvalScope(book,chapter) {
   return sha256(JSON.stringify({book:{id:book.id,title:book.title,author:book.author,language:book.language},chapter:{id:chapter.id,title:chapter.title,origin:chapter.origin,sha256:chapter.sha256,sources:chapter.sources,claims:chapter.claims}}));
 }
 
-export function taskScope(program,task) {
+function taskScope(program,task) {
   return sha256(JSON.stringify({book:program.books.find(b=>b.id===task.book_id),task:{id:task.id,book_id:task.book_id,role:task.role,depends_on:task.depends_on,resources:resources(task),estimate_tokens:task.estimate_tokens,estimate_usd:task.estimate_usd,max_attempts:attemptLimit(task)},dependencies:task.depends_on.map(id=>{const dep=program.tasks.find(t=>t.id===id);return {id:dep.id,artifact:dep.artifact??null,receipt:dep.receipt??null,state:dep.state};})}));
 }
 
