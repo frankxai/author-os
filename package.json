@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node bin/author.js",
-    "test": "node bin/quality-check.js --self-test && node --test bin/publication-program.test.js bin/search.test.js"
+    "test": "node bin/quality-check.js --self-test && node --test bin/publication-program.test.js bin/search.test.js bin/quality-check.test.js"
   },
   "keywords": [
     "ai",

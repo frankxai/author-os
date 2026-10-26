@@ -5,6 +5,7 @@
 // Exit code 0 = pass, 1 = fail (>5 tics or >25% passive)
 
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const BANNED_TICS = [
   'delve', 'tapestry', 'landscape', 'realm', 'multifaceted',
@@ -23,7 +24,7 @@ const BANNED_TICS = [
 const PASSIVE_HELPERS = ['was', 'were', 'been', 'being', 'is', 'are', 'be'];
 const PAST_PARTICIPLE_RE = /\b(?:ed|en|wn|ght|nt|un)\b/; // rough heuristic
 
-function analyze(text) {
+export function analyze(text) {
   const lines = text.split('\n');
   const plainText = lines
     .filter(l => !l.startsWith('#') && !l.startsWith('```') && l.trim().length > 0)
@@ -79,7 +80,7 @@ function analyze(text) {
   };
 }
 
-function report(filePath, result) {
+export function report(filePath, result) {
   const line = '-'.repeat(50);
   console.log(`\n  AuthorOS Quality Report`);
   console.log(`  File: ${filePath}`);
@@ -127,19 +128,21 @@ The queen walked to the gate and spoke clearly.
 
 // ── Main ─────────────────────────────────────────────────────────────
 
-const filePath = process.argv[2];
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))) {
+  const filePath = process.argv[2];
 
-if (filePath === '--self-test') {
-  selfTest();
-} else if (!filePath) {
-  console.error('Usage: node quality-check.js <file.md>');
-  process.exit(1);
-} else if (!fs.existsSync(filePath)) {
-  console.error(`File not found: ${filePath}`);
-  process.exit(1);
-} else {
-  const text = fs.readFileSync(filePath, 'utf-8');
-  const result = analyze(text);
-  const pass = report(filePath, result);
-  process.exit(pass ? 0 : 1);
+  if (filePath === '--self-test') {
+    selfTest();
+  } else if (!filePath) {
+    console.error('Usage: node quality-check.js <file.md>');
+    process.exit(1);
+  } else if (!fs.existsSync(filePath)) {
+    console.error(`File not found: ${filePath}`);
+    process.exit(1);
+  } else {
+    const text = fs.readFileSync(filePath, 'utf-8');
+    const result = analyze(text);
+    const pass = report(filePath, result);
+    process.exit(pass ? 0 : 1);
+  }
 }
