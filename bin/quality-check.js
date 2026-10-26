@@ -23,7 +23,7 @@ const BANNED_TICS = [
 const PASSIVE_HELPERS = ['was', 'were', 'been', 'being', 'is', 'are', 'be'];
 const PAST_PARTICIPLE_RE = /\b(?:ed|en|wn|ght|nt|un)\b/; // rough heuristic
 
-function analyze(text) {
+export function analyze(text) {
   const lines = text.split('\n');
   const plainText = lines
     .filter(l => !l.startsWith('#') && !l.startsWith('```') && l.trim().length > 0)
@@ -127,7 +127,12 @@ The queen walked to the gate and spoke clearly.
 
 // ── Main ─────────────────────────────────────────────────────────────
 
+import { fileURLToPath } from "node:url";
+const isMain = process.argv[1] && fs.existsSync(process.argv[1]) && fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1]);
 const filePath = process.argv[2];
+
+if (!isMain) { /* let it be imported */ }
+else
 
 if (filePath === '--self-test') {
   selfTest();
