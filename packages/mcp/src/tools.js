@@ -132,7 +132,10 @@ export async function callAuthorOsTool(name, input = {}, options = {}) {
     }
     case 'export_book': {
       const format = input.format || 'markdown';
-      if (['markdown', 'md'].includes(format)) return textResult(exportLocalProject(root, format));
+      if (['markdown', 'md'].includes(format)) {
+        try { return textResult(exportLocalProject(root, format)); }
+        catch (error) { return textResult({ success: false, error: { code: 'MARKDOWN_EXPORT_REFUSED', message: error.message } }); }
+      }
       if (format === 'epub') {
         try { return textResult(exportLocalProject(root, format)); }
         catch (error) { return textResult({ success: false, error: { code: 'EPUB_EXPORT_REFUSED', message: error.message } }); }
