@@ -9,6 +9,13 @@ import path from 'node:path';
 const repoRoot = path.resolve('.');
 const secretValue = 'do-not-print-this-token-value';
 
+const cliPackage = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+const mcpPackage = JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', 'mcp', 'package.json'), 'utf8'));
+for (const dependency of ['@modelcontextprotocol/sdk', 'zod']) {
+  assert.equal(cliPackage.dependencies?.[dependency], mcpPackage.dependencies[dependency],
+    `The published CLI must include its native MCP runtime dependency: ${dependency}`);
+}
+
 function runConfig(args = []) {
   const result = spawnSync(process.execPath, ['bin/author.js', 'mcp', '--client-config', '--json', ...args], {
     cwd: repoRoot,

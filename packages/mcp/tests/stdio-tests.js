@@ -8,6 +8,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { buildAuthorOsMcpClientConfig } from '../src/client-config.js';
 import { buildMcpToolManifest } from '../src/tools.js';
+import { readAuthorProject, writeAuthorProject } from '../../local/src/index.js';
 
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const serverPath = path.join(repoRoot, 'packages', 'mcp', 'bin', 'author-os-mcp.js');
@@ -19,6 +20,9 @@ const prose = 'The copper bell rang once across the frozen lake.';
 fs.mkdirSync(manuscriptRoot);
 fs.mkdirSync(hostCwd);
 fs.writeFileSync(path.join(manuscriptRoot, 'authoros.json'), JSON.stringify({ title: 'Native MCP Book' }));
+const initialProject = readAuthorProject(manuscriptRoot);
+initialProject.chapters.push({ id: 'native-chapter', bookId: initialProject.books[0].id, title: 'Across the lake', order: 1 });
+writeAuthorProject(manuscriptRoot, initialProject);
 
 async function withClient(config, check) {
   const client = new Client({ name: 'author-os-stdio-test', version: '1.0.0' });
@@ -60,9 +64,11 @@ try {
     const tools = await client.listTools(undefined, requestOptions);
     assert.deepEqual(tools.tools.map(tool => tool.name).sort(), buildMcpToolManifest().tools.map(tool => tool.name).sort());
     const call = (name, args) => client.callTool({ name, arguments: args }, undefined, requestOptions);
-    const created = await call('create_scene', { title: 'The bell', chapterId: 'missing-chapter', text: prose });
+    const created = await call('create_scene', { title: 'The bell', chapterId: 'native-chapter', text: prose });
     assert.notEqual(created.isError, true);
     assert.equal(JSON.parse(created.content[0].text).success, true);
+    assert.equal(JSON.parse(created.content[0].text).scene.chapterId, 'native-chapter');
+    assert.equal(readAuthorProject(manuscriptRoot).scenes[0].chapterId, 'native-chapter');
 
     const exported = await call('export_book', { format: 'markdown' });
     assert.notEqual(exported.isError, true);
@@ -70,6 +76,8 @@ try {
     assert.equal(path.relative(manuscriptRoot, exportedFile), path.join('output', 'book.md'));
     const markdown = fs.readFileSync(exportedFile, 'utf8');
     assert.equal(markdown.split(prose).length - 1, 1);
+    assert.match(markdown, /## Across the lake/);
+    assert.equal(markdown.includes('## Unassigned Scenes'), false);
     assert.equal(fs.existsSync(path.join(hostCwd, '.authoros')), false);
 
     const graphFile = path.join(manuscriptRoot, '.authoros', 'project.graph.json');
