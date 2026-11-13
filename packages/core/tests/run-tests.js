@@ -1,0 +1,280 @@
+import assert from 'node:assert/strict';
+import {
+  buildCockpitViewModel,
+  buildPackRegistry,
+  buildProjectContext,
+  appendAuditArtifacts,
+  canUseFeature,
+  createCreditLedgerEntry,
+  createEmptyProject,
+  createEntitlementSnapshot,
+  createExportRecord,
+  createProjectFromManuscript,
+  createPublishingReadinessReport,
+  createRevisionSuggestion,
+  decideSuggestion,
+  createSceneRecord,
+  createStarterProject,
+  exportBookMarkdown,
+  installPackIntoProject,
+  offerCatalog,
+  runContinuityCheck,
+  sampleProject,
+  searchManuscript,
+  selectModelRoute,
+  validateProjectGraph,
+} from '../src/index.js';
+
+const empty = createEmptyProject({ title: 'Test Book' });
+assert.equal(empty.project.title, 'Test Book');
+assert.equal(validateProjectGraph(empty).ok, true);
+
+const starter = createStarterProject({
+  title: 'Starter Test Book',
+  genre: ['romantasy'],
+  premise: 'A cartographer maps doors that remember their missing cities.',
+  audience: 'AI-native indie authors',
+  template: 'romance-arc',
+});
+assert.equal(starter.project.title, 'Starter Test Book');
+assert.equal(starter.project.template, 'romance-arc');
+assert.equal(starter.project.activationMode, 'starter');
+assert.equal(starter.chapters.length, 3);
+assert.equal(starter.scenes.length, 3);
+assert.equal(starter.beats.length, 3);
+assert.ok(starter.entities.length >= 4);
+assert.ok(starter.relationships.length >= 2);
+assert.equal(starter.assets[0].type, 'brief');
+assert.ok(starter.tasks.some(task => task.id === 'task_seed_continuity'));
+assert.ok(starter.boards[0].nodes.some(node => node.sourceId === 'asset_starter_brief'));
+assert.ok(starter.decisions.some(decision => decision.id === 'decision_seed_contract'));
+assert.equal(validateProjectGraph(starter).ok, true);
+const packRegistry = buildPackRegistry();
+assert.equal(packRegistry.manifest.id, 'authoros-foundry-pack');
+assert.equal(packRegistry.packs.length, 6);
+const foundryEntitlements = createEntitlementSnapshot('foundry-pack');
+assert.equal(canUseFeature(foundryEntitlements, 'premium-packs'), true);
+assert.equal(canUseFeature(foundryEntitlements, 'pack:authoros-foundry-pack'), true);
+assert.equal(canUseFeature(createEntitlementSnapshot('open-core'), 'premium-packs'), false);
+const packedStarter = installPackIntoProject(starter, 'seven-pass-revision', { installedBy: 'core-test' });
+assert.deepEqual(packedStarter.installed, ['seven-pass-revision']);
+assert.equal(packedStarter.noProseGenerated, true);
+assert.ok(packedStarter.project.installedPacks.some(pack => pack.packId === 'seven-pass-revision'));
+assert.ok(packedStarter.project.tasks.some(task => task.sourcePackId === 'seven-pass-revision'));
+assert.ok(packedStarter.project.boards.some(board => board.id === 'board_pack_seven-pass-revision'));
+const packedContext = buildProjectContext(packedStarter.project);
+assert.equal(packedContext.stats.installedPacks, 1);
+assert.equal(packedContext.installedPacks[0].packId, 'seven-pass-revision');
+assert.equal(packedContext.installedPacks[0].trust.noProseGenerated, true);
+const packedAgain = installPackIntoProject(packedStarter.project, 'seven-pass-revision', { installedBy: 'core-test' });
+assert.deepEqual(packedAgain.installed, []);
+assert.deepEqual(packedAgain.skipped, ['seven-pass-revision']);
+const starterCockpit = buildCockpitViewModel(starter);
+assert.equal(starterCockpit.manuscriptSpine.length, 3);
+assert.ok(starterCockpit.corkboard.length >= 3);
+assert.ok(starterCockpit.canvas.nodes.some(node => node.kind === 'task'));
+
+const importedManuscript = createProjectFromManuscript({
+  title: 'Imported Test Book',
+  manuscriptText: [
+    '# Imported Test Book',
+    '',
+    '## Chapter One',
+    '',
+    'The first imported chapter keeps the author text intact.',
+    '',
+    '## Chapter Two',
+    '',
+    'The second imported chapter becomes another reviewable scene.',
+  ].join('\n'),
+  sourceName: 'import-test.md',
+});
+assert.equal(importedManuscript.project.title, 'Imported Test Book');
+assert.equal(importedManuscript.project.stage, 'imported');
+assert.equal(importedManuscript.chapters.length, 2);
+assert.equal(importedManuscript.scenes.length, 2);
+assert.equal(importedManuscript.scenes[0].status, 'imported');
+assert.ok(importedManuscript.scenes[0].tags.includes('imported-manuscript'));
+assert.equal(importedManuscript.assets[0].type, 'manuscript');
+assert.equal(importedManuscript.assets[0].provenance.sceneCount, 2);
+assert.ok(importedManuscript.tasks.some(task => task.id === 'task_import_review'));
+assert.equal(validateProjectGraph(importedManuscript).ok, true);
+
+assert.throws(
+  () => createProjectFromManuscript({ manuscriptText: '' }),
+  /requires manuscriptText/,
+);
+
+const scene = createSceneRecord({ title: 'Test Scene', text: 'A clean sentence.' });
+assert.equal(scene.wordCount, 3);
+
+const context = buildProjectContext(sampleProject);
+assert.equal(context.project.title, 'The Luminous Archive');
+assert.ok(context.stats.scenes >= 4);
+
+const results = searchManuscript(sampleProject, 'memory');
+assert.ok(results.length > 0);
+
+const route = selectModelRoute('run_continuity_check', { models: { continuity: 'anthropic/example-reasoning' } });
+assert.equal(route.routeId, 'continuity');
+assert.equal(route.configuredModel, 'anthropic/example-reasoning');
+
+const report = runContinuityCheck(sampleProject);
+assert.equal(report.run.routeId, 'continuity');
+assert.ok(Array.isArray(report.issues));
+
+const entitlements = createEntitlementSnapshot('cloud-studio');
+assert.equal(entitlements.cloudIncluded, true);
+assert.ok(entitlements.features.includes('hosted-cockpit'));
+
+const revision = createRevisionSuggestion(sampleProject, 'sc_01', 'Tighten the opening hook.', {
+  estimatedCostUsd: 0.25,
+  includedCreditUsd: 0.1,
+});
+assert.equal(revision.suggestion.approvalState, 'requested');
+assert.equal(revision.run.approvalState, 'requested');
+assert.equal(revision.creditLedgerEntry.billableUsd, 0.15);
+
+let audited = appendAuditArtifacts(sampleProject, {
+  agentRuns: [revision.run],
+  suggestions: [revision.suggestion],
+  creditLedgerEntries: [revision.creditLedgerEntry],
+});
+const approvalDecision = decideSuggestion(audited, revision.suggestion.id, 'approved', { approverId: 'test-editor' });
+assert.equal(approvalDecision.suggestion.approvalState, 'approved');
+assert.equal(approvalDecision.approval.decision, 'approved');
+audited = approvalDecision.project;
+const creditSummary = createCreditLedgerEntry({ estimatedCostUsd: 0.05, includedCreditUsd: 0.05 });
+assert.equal(creditSummary.billableUsd, 0);
+
+audited = appendAuditArtifacts(audited, {
+  exports: [createExportRecord(audited, { status: 'completed', path: 'output/book.md' })],
+});
+const readiness = createPublishingReadinessReport(audited, { entitlements });
+assert.equal(readiness.creditSummary.entryCount, 1);
+assert.equal(readiness.checks.some(check => check.id === 'suggestions-approved' && check.status === 'pass'), true);
+
+const markdown = exportBookMarkdown(sampleProject);
+assert.ok(markdown.includes('# The Luminous Archive'));
+assert.ok(markdown.includes('Midnight Intake'));
+
+const cockpit = buildCockpitViewModel(sampleProject);
+assert.equal(cockpit.brand.core, 'Agentic Author OS');
+assert.ok(cockpit.corkboard.length > 0);
+assert.ok(cockpit.canvas.nodes.length > 0);
+assert.ok(cockpit.readiness.checks.length > 0);
+assert.equal(cockpit.context.entitlements.offerId, 'cloud-studio');
+assert.ok(offerCatalog.some(offer => offer.id === 'cloud-studio'));
+
+// Living Codex Engine Tests
+import {
+  extractInlineTags,
+  resolveMentionsAgainstEntities,
+  createCharacterDiamond,
+  buildEntityAppearanceMatrix,
+  auditAntiSlop,
+  runSevenPassAudit,
+  formatNotionSceneBlocks,
+  compileManuscriptMarkdown,
+  buildEpubPackageStructure,
+} from '../src/index.js';
+
+const taggedText = 'In @[The Luminous Archive], @Mira met #ArchiveStacks and broke the !GoldContract.';
+const extractedTags = extractInlineTags(taggedText);
+assert.equal(extractedTags.length, 4);
+assert.equal(extractedTags[0].name, 'The Luminous Archive');
+assert.equal(extractedTags[1].name, 'Mira');
+assert.equal(extractedTags[2].name, 'ArchiveStacks');
+assert.equal(extractedTags[3].name, 'GoldContract');
+
+const mentionResolution = resolveMentionsAgainstEntities(
+  [{ name: 'Mira Vale', kind: 'Character' }, { name: 'Unknown Lord', kind: 'Character' }],
+  sampleProject.entities
+);
+assert.equal(mentionResolution.resolved.length, 1);
+assert.equal(mentionResolution.resolved[0].matchedEntity.id, 'ent_mira');
+assert.equal(mentionResolution.unmapped.length, 1);
+
+const diamond = createCharacterDiamond({
+  name: 'Mira Vale',
+  desire: 'Find her lost history',
+  need: 'Accept her connection to the living books',
+  lie: 'She is merely an archivist',
+  wound: 'Her childhood memory was traded away',
+});
+assert.equal(diamond.name, 'Mira Vale');
+assert.equal(diamond.points.desire, 'Find her lost history');
+assert.ok(diamond.internalConflictIndex > 0.5);
+
+const appearanceMatrix = buildEntityAppearanceMatrix(sampleProject);
+assert.ok(appearanceMatrix['ent_mira'].totalSceneCount >= 3);
+
+// Anti-Slop & Stylistic Linter Tests
+const slopText = 'A testament to their courage, a shiver down her spine began to shake. He saw the tapestry of fate unfold.';
+const slopReport = auditAntiSlop(slopText);
+assert.ok(slopReport.cliches.length >= 2);
+assert.ok(slopReport.filterWords.length >= 1);
+assert.ok(slopReport.score < 80);
+
+const cleanText = [
+  'Mira stepped across the cold bronze threshold, pausing as the scent of aged cedar and ozone reached her.',
+  'Beneath her boots, the floorstones vibrated with low resonance, echoing the heartbeat of the sealed archive.',
+  'She pressed her palm against the shelf, listening intently. The parchment glowed with faint amber veins.',
+  '"I am here for the lost ledger," she whispered, her voice steady despite the shadows gathering near the ceiling.',
+  'The archive answered not with words, but with the sudden whisper of turning pages.',
+].join(' ');
+const cleanReport = auditAntiSlop(cleanText);
+assert.equal(cleanReport.cliches.length, 0);
+assert.ok(cleanReport.score >= 90);
+
+// Seven-Pass Revision Engine Tests
+const sevenPassReport = runSevenPassAudit(cleanText, { pov: 'Mira', entityIds: ['ent_mira'] }, sampleProject);
+assert.equal(sevenPassReport.passes.length, 7);
+assert.ok(sevenPassReport.overallScore >= 80);
+
+// Notion Bridge Tests
+const notionBlocks = formatNotionSceneBlocks(sampleProject.scenes[0], sevenPassReport);
+assert.ok(notionBlocks.length >= 3);
+assert.equal(notionBlocks[0].type, 'heading_2');
+assert.ok(notionBlocks.some(b => b.type === 'callout'));
+
+// Exporter Tests
+const fullMarkdown = compileManuscriptMarkdown(sampleProject);
+assert.ok(fullMarkdown.includes('# The Luminous Archive'));
+assert.ok(fullMarkdown.includes('## The Door That Remembered Her'));
+
+const recoveryProject = createEmptyProject({ title: 'Recover every saved scene' });
+recoveryProject.chapters = [{ id: 'unassigned', title: 'A real chapter', order: 1 }];
+recoveryProject.scenes = [
+  { id: 'assigned', chapterId: 'unassigned', title: 'Assigned scene', order: 1, text: 'Assigned prose survives once.' },
+  { id: 'missing', chapterId: 'deleted_chapter', title: 'Missing chapter scene', order: 2, text: 'Unresolved prose survives once.' },
+  { id: 'loose', chapterId: null, title: 'Loose scene', order: 1, text: 'Loose prose survives once.' },
+  { id: 'synopsis', chapterId: 'deleted_chapter', title: 'Synopsis scene', order: 3, synopsis: 'Unresolved synopsis survives once.' },
+];
+const recoveryBeforeExport = JSON.stringify(recoveryProject);
+const recoveryMarkdown = exportBookMarkdown(recoveryProject);
+for (const scene of recoveryProject.scenes) {
+  const text = scene.text || scene.synopsis;
+  assert.equal(recoveryMarkdown.split(text).length - 1, 1, `Export must retain ${scene.id} exactly once.`);
+}
+const unassignedSection = recoveryMarkdown.split('## Unassigned Scenes\n')[1];
+assert.ok(unassignedSection);
+assert.ok(!unassignedSection.includes('Assigned prose survives once.'));
+assert.ok(unassignedSection.indexOf('Loose prose survives once.') < unassignedSection.indexOf('Unresolved prose survives once.'));
+assert.ok(unassignedSection.indexOf('Unresolved prose survives once.') < unassignedSection.indexOf('Unresolved synopsis survives once.'));
+assert.equal(JSON.stringify(recoveryProject), recoveryBeforeExport);
+
+const epubPackage = buildEpubPackageStructure(sampleProject);
+assert.equal(epubPackage.format, 'epub3');
+assert.ok(epubPackage.packageFiles['mimetype']);
+assert.ok(epubPackage.packageFiles['OEBPS/nav.xhtml']);
+
+// Sensory Expansion Tests
+import { generateSensoryExpansion } from '../src/index.js';
+const sensory = generateSensoryExpansion({ focus: 'The Living Archive', genre: 'mythic-fantasy' });
+assert.equal(sensory.focus, 'The Living Archive');
+assert.ok(sensory.expansion.sight.length > 0);
+assert.ok(sensory.expansion.scent.length > 0);
+assert.ok(sensory.suggestedProsePrompt.includes('Describe The Living Archive'));
+
+console.log('Core tests passed.');
