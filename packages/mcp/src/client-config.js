@@ -30,7 +30,7 @@ function normalizeMode(mode) {
 
 function createLocalServer(input = {}) {
   const command = input.localCommand || 'author-os-mcp';
-  const args = Array.isArray(input.localArgs) ? input.localArgs : ['--stdio-lite'];
+  const args = Array.isArray(input.localArgs) ? input.localArgs : ['--stdio'];
   return {
     command,
     args,

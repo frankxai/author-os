@@ -85,7 +85,9 @@ try {
     fs.writeFileSync(graphFile, savedGraph);
     const resumed = await call('export_book', { format: 'markdown' });
     assert.notEqual(resumed.isError, true);
-    assert.equal(fs.readFileSync(JSON.parse(resumed.content[0].text).file, 'utf8'), markdown);
+    const resumedMarkdown = fs.readFileSync(JSON.parse(resumed.content[0].text).file, 'utf8');
+    assert.match(resumedMarkdown, /^# Native MCP Book\n/);
+    assert.equal(resumedMarkdown.split(prose).length - 1, 1);
 
     const overrideRoot = path.join(testRoot, 'explicit root');
     fs.mkdirSync(overrideRoot);

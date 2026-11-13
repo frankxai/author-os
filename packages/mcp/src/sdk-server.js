@@ -41,7 +41,7 @@ export async function startAuthorOsMcpSdkServer() {
       tool.name,
       tool.description,
       zodShapeFromJsonSchema(tool.inputSchema),
-      async input => callAuthorOsTool(tool.name, input),
+      async input => callAuthorOsTool(tool.name, input, { root: process.env.AUTHOR_OS_ROOT || process.cwd() }),
     );
   }
 

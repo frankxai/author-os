@@ -1315,8 +1315,8 @@ function cmdMcp() {
 
   const serverPath = getMcpServerPath();
   log(`\n${bold(BRAND)} — MCP Server\n`);
-  log('  Local stdio-lite harness:');
-  log(`    node "${serverPath}" --stdio-lite`);
+  log('  Local MCP stdio server:');
+  log(`    node "${serverPath}" --stdio`);
   log('');
   log('  Codex/Claude/Gemini-style config:');
   log(JSON.stringify(buildMcpClientConfig({ mode: 'local', host: 'generic', root: process.cwd() }).output, null, 2));
@@ -1409,7 +1409,7 @@ function buildMcpClientConfig(input = {}) {
     version: VERSION,
     localRoot,
     localCommand: 'node',
-    localArgs: [serverPath, '--stdio-lite'],
+    localArgs: [serverPath, '--stdio'],
   });
 }
 

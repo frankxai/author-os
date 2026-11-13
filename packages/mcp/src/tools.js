@@ -35,6 +35,7 @@ function rootFrom(input = {}, fallbackRoot = process.cwd()) {
 
 function textResult(data) {
   return {
+    ...(data?.success === false ? { isError: true } : {}),
     content: [
       {
         type: 'text',
