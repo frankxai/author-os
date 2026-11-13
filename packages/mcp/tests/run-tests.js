@@ -49,6 +49,7 @@ try {
   const created = JSON.parse((await callAuthorOsTool('create_scene', {
     root,
     title: 'A Persisted Scene',
+    chapterId: 'missing_chapter',
     synopsis: 'A scene made through MCP.',
     text: 'The agent wrote a traceable scene.',
   })).content[0].text);
@@ -78,6 +79,10 @@ try {
   })).content[0].text);
   assert.equal(exported.format, 'markdown');
   assert.ok(exported.export.id);
+  const exportedMarkdown = fs.readFileSync(exported.file, 'utf8');
+  assert.ok(exportedMarkdown.includes('## Unassigned Scenes'));
+  assert.equal(exportedMarkdown.split('The agent wrote a traceable scene.').length - 1, 1);
+  assert.equal(readAuthorProject(root).scenes.find(scene => scene.id === created.scene.id).chapterId, 'missing_chapter');
 
   const readiness = JSON.parse((await callAuthorOsTool('read_publishing_readiness', { root })).content[0].text);
   assert.ok(['needs_review', 'ready'].includes(readiness.status));

@@ -243,6 +243,27 @@ const fullMarkdown = compileManuscriptMarkdown(sampleProject);
 assert.ok(fullMarkdown.includes('# The Luminous Archive'));
 assert.ok(fullMarkdown.includes('## The Door That Remembered Her'));
 
+const recoveryProject = createEmptyProject({ title: 'Recover every saved scene' });
+recoveryProject.chapters = [{ id: 'unassigned', title: 'A real chapter', order: 1 }];
+recoveryProject.scenes = [
+  { id: 'assigned', chapterId: 'unassigned', title: 'Assigned scene', order: 1, text: 'Assigned prose survives once.' },
+  { id: 'missing', chapterId: 'deleted_chapter', title: 'Missing chapter scene', order: 2, text: 'Unresolved prose survives once.' },
+  { id: 'loose', chapterId: null, title: 'Loose scene', order: 1, text: 'Loose prose survives once.' },
+  { id: 'synopsis', chapterId: 'deleted_chapter', title: 'Synopsis scene', order: 3, synopsis: 'Unresolved synopsis survives once.' },
+];
+const recoveryBeforeExport = JSON.stringify(recoveryProject);
+const recoveryMarkdown = exportBookMarkdown(recoveryProject);
+for (const scene of recoveryProject.scenes) {
+  const text = scene.text || scene.synopsis;
+  assert.equal(recoveryMarkdown.split(text).length - 1, 1, `Export must retain ${scene.id} exactly once.`);
+}
+const unassignedSection = recoveryMarkdown.split('## Unassigned Scenes\n')[1];
+assert.ok(unassignedSection);
+assert.ok(!unassignedSection.includes('Assigned prose survives once.'));
+assert.ok(unassignedSection.indexOf('Loose prose survives once.') < unassignedSection.indexOf('Unresolved prose survives once.'));
+assert.ok(unassignedSection.indexOf('Unresolved prose survives once.') < unassignedSection.indexOf('Unresolved synopsis survives once.'));
+assert.equal(JSON.stringify(recoveryProject), recoveryBeforeExport);
+
 const epubPackage = buildEpubPackageStructure(sampleProject);
 assert.equal(epubPackage.format, 'epub3');
 assert.ok(epubPackage.packageFiles['mimetype']);
