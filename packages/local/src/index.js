@@ -60,8 +60,22 @@ function relative(root, file) {
 export function readAuthorProject(root = process.cwd()) {
   const graphFile = path.join(root, '.authoros', 'project.graph.json');
   const legacyGraphFile = path.join(root, 'authoros.graph.json');
-  const savedGraph = readJsonSafe(graphFile) || readJsonSafe(legacyGraphFile);
-  if (savedGraph) return normalizeProject(savedGraph);
+  const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  for (const file of [graphFile, legacyGraphFile]) {
+    if (!fs.existsSync(file)) continue;
+    let savedGraph;
+    try {
+      savedGraph = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+      throw new Error('Saved manuscript graph is invalid JSON. Repair or restore the saved file before continuing.');
+    }
+    if (!isObject(savedGraph) || !isObject(savedGraph.project) ||
+        !Array.isArray(savedGraph.chapters) || !Array.isArray(savedGraph.scenes)) {
+      throw new Error('Saved manuscript graph must contain project metadata, chapters and scenes. Repair or restore the saved file before continuing.');
+    }
+    return normalizeProject(savedGraph);
+  }
 
   const manifest = readJsonSafe(path.join(root, 'authoros.json')) || {};
   const title = manifest.title || readFirstHeading(path.join(root, 'outline.md')) || path.basename(root);

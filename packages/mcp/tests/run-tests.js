@@ -188,6 +188,16 @@ try {
     assert.equal(fs.readFileSync(legacyGraph, 'utf8'), validSavedGraph);
     assert.equal(fs.existsSync(path.join(brokenRoot, 'output', 'book.md')), false);
   }
+  fs.unlinkSync(selectedGraph);
+  fs.writeFileSync(legacyGraph, '{"project":');
+  const refusedLegacy = JSON.parse((await callAuthorOsTool('export_book', {
+    root: brokenRoot,
+    format: 'md',
+  })).content[0].text);
+  assert.equal(refusedLegacy.success, false);
+  assert.equal(refusedLegacy.error.code, 'MARKDOWN_EXPORT_REFUSED');
+  assert.equal(fs.readFileSync(legacyGraph, 'utf8'), '{"project":');
+  assert.equal(fs.existsSync(path.join(brokenRoot, 'output', 'book.md')), false);
   fs.writeFileSync(selectedGraph, validSavedGraph);
   const resumed = JSON.parse((await callAuthorOsTool('export_book', {
     root: brokenRoot,
@@ -195,6 +205,7 @@ try {
   })).content[0].text);
   assert.equal(resumed.format, 'markdown');
   assert.equal(fs.readFileSync(resumed.file, 'utf8').split('The agent wrote a traceable scene.').length - 1, 1);
+  assert.equal(fs.readFileSync(legacyGraph, 'utf8'), '{"project":');
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }
