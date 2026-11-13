@@ -210,4 +210,6 @@ try {
   fs.rmSync(root, { recursive: true, force: true });
 }
 
+await import('./stdio-tests.js');
+
 console.log('MCP tests passed.');

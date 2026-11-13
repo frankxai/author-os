@@ -29,6 +29,7 @@ assert.equal(local.mode, 'local');
 assert.ok(local.mcpServers['author-os']);
 assert.equal(local.mcpServers['author-os'].command, 'node');
 assert.ok(local.mcpServers['author-os'].args.some(arg => arg.endsWith(path.join('packages', 'mcp', 'bin', 'author-os-mcp.js'))));
+assert.equal(local.mcpServers['author-os'].args.at(-1), '--stdio');
 assert.equal(local.mcpServers['author-os'].env.AUTHOR_OS_ROOT, repoRoot);
 assert.equal(local.mcpServers['author-os-cloud'], undefined);
 assert.equal(local.install.target, 'claude');
