@@ -1872,9 +1872,15 @@ export function generateCharacterBoard(project, characterIdOrName) {
 export function exportBookMarkdown(project, options = {}) {
   const graph = normalizeProject(project);
   const title = options.title || graph.project.title;
+  const chapterIds = new Set(graph.chapters.map(chapter => chapter.id));
   const scenesByChapter = new Map();
+  const orphanScenes = [];
   for (const scene of graph.scenes) {
-    const key = scene.chapterId || 'unassigned';
+    if (!chapterIds.has(scene.chapterId)) {
+      orphanScenes.push(scene);
+      continue;
+    }
+    const key = scene.chapterId;
     const list = scenesByChapter.get(key) || [];
     list.push(scene);
     scenesByChapter.set(key, list);
@@ -1900,7 +1906,7 @@ export function exportBookMarkdown(project, options = {}) {
     }
   }
 
-  const orphanScenes = (scenesByChapter.get('unassigned') || []).sort((a, b) => (a.order || 0) - (b.order || 0));
+  orphanScenes.sort((a, b) => (a.order || 0) - (b.order || 0));
   if (orphanScenes.length) {
     parts.push('## Unassigned Scenes', '');
     for (const scene of orphanScenes) {
