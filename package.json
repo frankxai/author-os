@@ -42,7 +42,9 @@
     "node": ">=24 <25"
   },
   "dependencies": {
-    "pg": "^8.22.0"
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "pg": "^8.22.0",
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "next": "^16.2.10",

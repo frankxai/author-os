@@ -55,6 +55,7 @@ export const authorOsToolDefinitions = [
       properties: {
         root: { ...stringSchema },
         title: { ...stringSchema },
+        chapterId: { ...stringSchema, description: 'Chapter ID to associate the scene with.' },
         synopsis: { ...stringSchema },
         pov: { ...stringSchema },
         text: { ...stringSchema },
